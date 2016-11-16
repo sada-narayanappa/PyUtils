@@ -113,13 +113,15 @@ class A:
     def dtype(self):
         return "A"
 
-    def __init__(self, s = "", name =""):
+    def __init__(self, s = "", name ="\_"):
         self.type = "ClassA"
+
+        if ( type(s) is np.ndarray or type(s) is np.matrix):
+            self.a = np.matrix(s)
+        #if ( type(s) is np.ndarray or type(s) is np.matrix):
 
         if ( type(s) is str):
             self.a = A.setM(s)
-        elif ( type(s) is np.ndarray):
-            self.a = s
         elif ( type(s) is list ):
             self.a = np.array(s) #[None]
         self.name = name;
@@ -137,7 +139,7 @@ class A:
             a = A.setA(s)
             r = a if i == 0 else np.vstack((r,a))
 
-        return r
+        return np.matrix(r)
 
     @staticmethod
     def setA(s = None):
@@ -146,12 +148,12 @@ class A:
         s = s.replace(",", " ")
         a = s.split()
         try:
-            a = map(int, a)
+            a = list(map(int, a))
         except:
-            a = map(float, a)
+            a = list(map(float, a))
 
         a = np.array(a)
-        return a[None]
+        return a
 
     def p(self):
         np.set_printoptions(precision=2, linewidth=180)
@@ -163,13 +165,33 @@ class A:
         s =  "[" + s + "]"
         return s
 
+    def pr(self,output=True, noName=False):
+        np.set_printoptions(precision=2, linewidth=180)
+        m = self.a;
+
+        dim = self.name + "_{" + " \\times ".join(map(str, (m.shape) )) + "} = ";
+        lhs = "" if noName  else dim;
+
+        s = str(m)
+        s = s.replace('[', '')
+        s = s.replace(']', '')
+        s = s.replace('\n', '\\\\\\\\<NEW-LINE>')
+        s = re.sub( '\s+', ' ', s ).strip()
+        s = s.replace('<NEW-LINE>', "\n")
+        s = re.sub('\n\s+', '', s)
+        s = s.replace(' ', ' & ')
+        s = lhs + "\\begin{bmatrix}\n" + s + "\n\\end{bmatrix}"
+        #print self.a
+        if ( output):
+            display(Math(s))
+        return s;
+
     @staticmethod
     def M(m, name="", call_display=True, showdim=True):
         np.set_printoptions(precision=2, linewidth=180)
         name = name + " =" if name != "" else ""
         dim = "";
         if (showdim):
-            dim = " \\times ".join(map(str, (m.shape) )) ;
             dim = " \\times ".join(map(str, (m.shape) )) ;
         s = str(m)
         s = s.replace('[', '')
@@ -185,6 +207,7 @@ class A:
             display(Math(s))
         return s;
 
+
     #Display thr matrix
     @staticmethod
     def display(*M):
@@ -199,7 +222,12 @@ class A:
 
     # Returns Latex information
     @property
-    def l(self):
+    def T(self):
+        return A(self.a.T)
+
+    # Returns Latex information
+    @property
+    def l(self, output=True):
         np.set_printoptions(precision=2, linewidth=180)
         name = self.name + " =" if self.name != "" else ""
         dim = " \\times ".join(map(str, (self.a.shape) )) ;
@@ -213,7 +241,7 @@ class A:
         s = s.replace(' ', ' & ')
         s = name + "\\begin{bmatrix}\n" + s + "\n\\end{bmatrix}" +  dim + "\n"
         #print self.a
-        display(Math(s))
+        #if (output): display(Math(s))
         return s;
 
     def __str__(self):
@@ -228,6 +256,13 @@ class A:
         return ret
 
 
+    def __mul__(self, o):
+        if (type(o) == A ):
+            r = self.a * o.a
+        else:
+            r = self.a * o.a
+        ret = A(r)
+        return ret
 
 
 '''
