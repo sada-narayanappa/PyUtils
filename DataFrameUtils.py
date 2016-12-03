@@ -55,21 +55,23 @@ def getDF(fileName, debug=False, headers=0, names=None, usecols=None):
         #raise Exception( fileName + " does not exist")
         print ("ERROR: *** " +fileName + " does not exist");
         return None;
- 
-    if fileName.endswith(".xlsx"): 
-       df1 = pd.read_excel(fileName)
-    elif ("/aura/" in fileName):
-        df1 = getAuraDF(fileName);
-        return df1
-    else:
-        sep = ","
-        if not fileName.endswith(".csv"):
-            with open(fileName, 'r') as f:
-                line    = f.readline();    
-                #split1  = line.split(",");
-                sep = DetermineSeperator(line);
+    sep = ",";
+    
+    if (not fileName.startswith("http")):
+        if fileName.endswith(".xlsx"): 
+           df1 = pd.read_excel(fileName)
+        elif ("/aura/" in fileName):
+            df1 = getAuraDF(fileName);
+            return df1
+        else:
+            sep = ","
+            if not fileName.endswith(".csv"):
+                with open(fileName, 'r') as f:
+                    line    = f.readline();    
+                    #split1  = line.split(",");
+                    sep = DetermineSeperator(line);
                 
-        df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
+    df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
                           skipinitialspace =True, names=names, comment='#', usecols=usecols)
     return df1;
 
@@ -122,22 +124,4 @@ def normalizeData(df):
     df2  = pd.DataFrame(d, columns=cols)
     return df2;
 
-#def DisplayInit():
-#    style= '''   
-#        <style>   
-#        .container { width: 100% !important; }
-#            div.cell{
-#                width:100%;
-#                margin-left:0%;
-#                margin-right:auto;
-#            }
-#        </style>    ''';
-#    display(HTML(style))
-    
-#def pcolumns(df):
-#    c1 = [ k for k in df.columns]
-#    print (c1)
-#    return c1
-    
-#DisplayInit()
 
