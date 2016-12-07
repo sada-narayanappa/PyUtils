@@ -48,14 +48,14 @@ def getAuraDF(link):
     else:
         return js
         
-def getDF(fileName, debug=False, headers=0, names=None, usecols=None):
+def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, seperator=None, index_col=None):
     if (    not (fileName.startswith("http://"))  and
             not (fileName.startswith("https://")) and
             not os.path.exists(fileName)):
         #raise Exception( fileName + " does not exist")
         print ("ERROR: *** " +fileName + " does not exist");
         return None;
-    sep = ",";
+    sep = seperator or ",";
     
     if (not fileName.startswith("http")):
         if fileName.endswith(".xlsx"): 
@@ -72,12 +72,13 @@ def getDF(fileName, debug=False, headers=0, names=None, usecols=None):
                     sep = DetermineSeperator(line);
                 
     df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
-                          skipinitialspace =True, names=names, comment='#', usecols=usecols)
+                      skipinitialspace =True, names=names, comment='#', usecols=usecols,
+                      index_col=index_col)
     return df1;
 
     
 def LoadDataSet(fileOrString, columns=None, 
-                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None):
+                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None, index_col=None):
     if (fileOrString.find("\n") >=0 ):
         ps = [line.strip() for line in fileOrString.split('\n')
                 if line.strip() != '' and not line.startswith("#") ];
@@ -88,7 +89,7 @@ def LoadDataSet(fileOrString, columns=None,
         ns = [p.split(sep) for p in ps]
         df1 = pd.DataFrame(ns[1:], columns=ns[0]);
     else:               
-        df1 = getDF(fileOrString, debug=False, headers=0, names=None, usecols=usecols)     
+        df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, usecols=usecols, seperator=seperator, index_col=index_col)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
