@@ -71,9 +71,8 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
                     #split1  = line.split(",");
                     sep = DetermineSeperator(line);
                 
-    df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
-                      skipinitialspace =True, names=names, comment='#', usecols=usecols,
-                      index_col=index_col)
+            df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
+                          skipinitialspace =True, names=names, comment='#', usecols=usecols)
     return df1;
 
     
