@@ -29,7 +29,8 @@ from sklearn import metrics
 from sklearn.metrics import *
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import label_binarize
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from sklearn.multiclass import OneVsRestClassifier
 
 import os
@@ -46,7 +47,7 @@ from sklearn.externals.six import StringIO
 # -*- coding: utf-8 -*-
 def run_cv(X,y,clf_class,printDebug = False , clf=None):
     # Construct a kfolds object
-    kf = sklearn.cross_validation.KFold(len(y),n_folds=5,shuffle=True)
+    kf = sklearn.model_selection.KFold(len(y),n_folds=5,shuffle=True)
     y_pred = y.copy()
     
     # Iterate through folds\
@@ -65,7 +66,7 @@ def run_cv(X,y,clf_class,printDebug = False , clf=None):
 
 # -*- coding: utf-8 -*-
 def run_cvTT(X,y,clf_class,printDebug = True , clf=None):
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split( X, y, test_size=0.2, random_state=0);
+    X_train, X_test, y_train, y_test = model_selection.train_test_split( X, y, test_size=0.2, random_state=0);
             
     
 def accuracy(y_true,y_pred):

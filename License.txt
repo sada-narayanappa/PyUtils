@@ -201,9 +201,9 @@
    limitations under the License.
 
 ==========================================================================
-The following license applies to the JQuery JavaScript library
+The following license applies to the PyUtils library
 --------------------------------------------------------------------------
-Copyright (c) 2010 John Resig, http://jquery.com/
+Copyright (c) 2010 Geospaces.org, http://geospaces.org/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
