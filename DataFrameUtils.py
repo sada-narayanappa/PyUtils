@@ -48,7 +48,7 @@ def getAuraDF(link):
     else:
         return js
         
-def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, seperator=None, index_col=None):
+def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, seperator=None, index_col=None, sheetname=0):
     if (    not (fileName.startswith("http://"))  and
             not (fileName.startswith("https://")) and
             not os.path.exists(fileName)):
@@ -59,7 +59,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     
     if (not fileName.startswith("http")):
         if fileName.endswith(".xlsx"): 
-           df1 = pd.read_excel(fileName)
+           df1 = pd.read_excel(fileName, sheetname=sheetname)
         elif ("/aura/" in fileName):
             df1 = getAuraDF(fileName);
             return df1
@@ -77,7 +77,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
 
     
 def LoadDataSet(fileOrString, columns=None, 
-                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None, index_col=None):
+                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None, index_col=None,sheetname=0):
     if (fileOrString.find("\n") >=0 ):
         ps = [line.strip() for line in fileOrString.split('\n')
                 if line.strip() != '' and not line.startswith("#") ];
@@ -88,7 +88,8 @@ def LoadDataSet(fileOrString, columns=None,
         ns = [p.split(sep) for p in ps]
         df1 = pd.DataFrame(ns[1:], columns=ns[0]);
     else:               
-        df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, usecols=usecols, seperator=seperator, index_col=index_col)     
+        df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, 
+				usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;

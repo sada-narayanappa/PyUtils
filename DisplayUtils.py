@@ -344,6 +344,13 @@ def createIcon(df,idx):
         
     return figName1;
 
+def getDesc(df, idx):
+    t = df.iloc[:,idx].describe(include='all')
+    ds = [("<td>"+t.index[ii] + ":" + "{0:0.2f}".format(jj) + "</td>") for ii,jj in enumerate(t)]
+    ds.insert(4, "<tr></tr>");
+    ret  = "<table><tr>" +"".join(ds) + "</tr></table>"
+    return ret;
+
 def getIcons(df,h):
     h1="<tr><td></td>";
     idx=0;
@@ -356,10 +363,19 @@ def getIcons(df,h):
         if ( fig is None):
             h1 = h1 + "<td></td>";
         else:
+            
             #fig = "/files/" + fig;
-            h1 = h1 + "<td><a class='thumbnail' href='#thumb'><img src='" + fig;
-            h1 = h1 + "' border=0 style='{margins: 0;}' width=64 height=64 ";
-            h1 = h1 + "/> <span><img src='"+ fig + "' /><br /></span></a>";
+            desc = getDesc(df, idx);
+            h1 = h1 + '''
+<td><a class='thumbnail' href='#thumb'>
+<img src='{}' border=0 style='{{margins: 0;}}' width=64 height=64 /> 
+<span><img src='{}' /><br />
+{} {}
+</span></a>'''.format(fig, fig, '', desc); #getDesc(df,idx);
+
+            #h1 = h1 + "<td><a class='thumbnail' href='#thumb'><img src='" + fig;
+            #h1 = h1 + "' border=0 style='{margins: 0;}' width=64 height=64 ";
+            #h1 = h1 + "/> <span><img src='"+ fig + "' /><br /></span></a>";
 #            h1 = h1 +"onmouseover='this.width=500;' onmouseout='this.width=64' >" 
                         
             h1 = h1 + "</td>";  
@@ -388,7 +404,7 @@ def addDescribe(df,h):
     return ret;
     
 def displayDFs(dfs, maxrows = 6, showTypes = True, showIcons=True, 
-               search=None, cols=[],  showStats = True):
+               search=None, cols=[],  showStats = False):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
@@ -487,12 +503,68 @@ def plotPercentHist(x, bins=10, rangeI=(0.0,1.0)):
 		  plt.xticks(be);
 		  return h,be
 
-def plotBar(x, labels=None, bottom=None):
+def pltBar(x, labels=None, bottom=None):
+   x = x.value_counts()
 	plt.bar(x, range(0, len(x)), bottom=bottom);
 	if (labels is None):
 		labels = range(0,len(x));
 	plt.xticks(labels);
 
+import math
+import StatUtils
+def plthist(x, y=None, bins='auto', alpha=0.75, title=None, grid = True, xlabel=None, 
+            ylabel=None, label=None, axis=None, subplot=None, 
+            facecolor=None, ablines=[], legend=False,
+            low=None, high=None,  
+           ):
+    c='brygcmykw';
+    if(subplot):
+        plt.subplot(subplot)
+        
+    N, bins, patches = plt.hist(x, bins=bins, alpha=alpha, label=label, facecolor=facecolor)
 
-
-
+    if (low is not None and high is None ):
+        high = math.inf
+    if (high is not None and low is None):
+        low = -math.inf
+    if(low is not None and high is not None ):
+        ca=plt.gca()
+        w = min(high, max(x)) - max(low, min(x));
+        l = max(low, min(x))
+        
+        hm = max(N)/4
+        rect = plt.Rectangle( (l,0), w,hm, alpha=.6, facecolor='y')
+        ca.add_patch(rect)
+        
+        rx, ry = rect.get_xy()
+        cx = rx + rect.get_width()/2.0
+        cy = ry + rect.get_height()/2.0
+        r = StatUtils.NormProb(x, low,high) * 100
+        r1 = "Prob: {0:0.0f}-{1:0.0f} : {2:0.2f}%".format(low, high,r)
+        plt.annotate(str(r1), (cx, cy), color='w', weight='bold', fontsize=8, ha='center', va='center')
+        
+    #print(low, high)    
+        
+        
+    if(grid is not None): plt.grid(grid)
+    if(xlabel is not None): plt.xlabel(xlabel)
+    if(ylabel is not None): plt.ylabel(ylabel)
+    if(axis is not None):  plt.axis(axis)
+    if(title is not None): plt.title(title)
+    
+    for i,f in enumerate(ablines):
+        try:
+            methodToCall = getattr(x, f)
+            v = methodToCall();
+            #plt.axvline(v, color='b', linestyle='dashed', linewidth=2, )
+            lab = f + " : " + "{0:0.2f}".format(v)
+            lab = f
+            plt.axvline(v,  color=c[i%len(c)], linestyle='dashed', linewidth=1, label=lab)
+            #plt.text(v+.1, 75, lab ,rotation=90)
+            #plt.annotate(lab, xy=(v, 1), xytext=(v, 75),arrowprops=dict(facecolor='black', shrink=0.05),)
+            
+        except:
+            print("Method '{}' not found".format(f))
+            
+    if (legend):
+        leg=plt.legend(loc='best', frameon=1)    

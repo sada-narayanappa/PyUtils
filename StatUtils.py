@@ -74,6 +74,16 @@ def Chi2Critical(df, alpha = 0.05):
     Chi2_c = stats.chi2.ppf(cl, df);
     return Chi2_c;
     
+from scipy.stats import norm
+def NormProb(x, l,u):
+    mu = np.mean(x)
+    st = np.std(x)
+    print(mu, st)
+    minX=min(x)
+    maxX=max(x)
+    n = norm(mu, st) 
+    p = n.cdf(u)- n.cdf(l)
+    return p;
+
     
-    
-    
+ 
