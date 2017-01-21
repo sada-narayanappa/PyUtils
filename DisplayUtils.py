@@ -344,12 +344,27 @@ def createIcon(df,idx):
         
     return figName1;
 
+
 def getDesc(df, idx):
     t = df.iloc[:,idx].describe(include='all')
-    ds = [("<td>"+t.index[ii] + ":" + "{0:0.2f}".format(jj) + "</td>") for ii,jj in enumerate(t)]
-    ds.insert(4, "<tr></tr>");
-    ret  = "<table><tr>" +"".join(ds) + "</tr></table>"
-    return ret;
+
+    out = "";
+    for ii,jj in enumerate(t):
+        if ( str(type(jj)).find('float') >=0):
+           val = "{0:0.2f}".format(jj) 
+        else:
+           val = str(jj)
+        tval = "<td>{} : {} </td>".format(t.index[ii] , val)
+        
+        #if (df.dtypes[idx] == object or str(df.dtypes[idx]).find("date") >= 0 ):
+        if (ii == 4):
+            out += "</tr><tr>"+tval
+        else:
+            out += tval;
+
+    out = "<table><tr>" + out + "</tr></table>";
+    return out
+
 
 def getIcons(df,h):
     h1="<tr><td></td>";
@@ -503,12 +518,12 @@ def plotPercentHist(x, bins=10, rangeI=(0.0,1.0)):
 		  plt.xticks(be);
 		  return h,be
 
-def pltBar(x, labels=None, bottom=None):
-   x = x.value_counts()
-	plt.bar(x, range(0, len(x)), bottom=bottom);
-	if (labels is None):
-		labels = range(0,len(x));
-	plt.xticks(labels);
+#def pltBar(x, labels=None, bottom=None):
+   #x = x.value_counts()
+#plt.bar(x, range(0, len(x)), bottom=bottom);
+	#if (labels is None):
+		#labels = range(0,len(x));
+	#plt.xticks(labels);
 
 import math
 import StatUtils
