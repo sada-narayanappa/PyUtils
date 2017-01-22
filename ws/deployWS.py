@@ -7,20 +7,24 @@ import wsUtils
 import psutil
 
 def kill(cmd0=None, cmd1=None):
+    pass;
+
+def findPS(cmd0=None, cmd1=None):
     if (cmd0 is None and cmd1 is None):
         return
     
-    procname="jupyter"
     for proc in psutil.process_iter():
         try:
             n = proc.name()
             cmd = proc.cmdline()
             if ( (cmd0 and cmd[0].find(cmd0) > 0 ) or
                  (cmd1 and cmd[1].find(cmd1) > 0 )  ):
-                print ("Will kill ", n, cmd, proc.pid )
-                proc.kill()
+                print ("Found process ", n, cmd, proc.pid )
+                return proc
         except:
             pass
+
+    return None
 
 def deploy():
     global notebooks
@@ -32,7 +36,10 @@ def deploy():
     merge_notebooks(notebooks, 'wsex.ipynb', False);
 
 def run():
-    kill(cmd1='jupyter-kernelgateway')
+    proc = findPS(cmd1='jupyter-kernelgateway')
+    if ( proc is not None):
+        print("Process seems to be running ...")
+        return
 
     OPTS='--KernelGatewayApp.api="kernel_gateway.notebook_http" --KernelGatewayApp.prespawn_count=1'
     PORT='--KernelGatewayApp.port=8501'
