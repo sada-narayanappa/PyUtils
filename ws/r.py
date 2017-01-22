@@ -80,5 +80,5 @@ def cmd():
     merge_notebooks(notebooks)
 
 if __name__ == '__main__':
-    deploy();
+    #deploy();
     run();

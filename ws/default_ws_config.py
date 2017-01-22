@@ -1,5 +1,5 @@
 port=8501
-snotebooks=[
+notebooks=[
     "../../../notebooks/PyUtils/ws/wsex1.ipynb",
     "../../../notebooks/PyUtils/ws/wsex2.ipynb",
 
