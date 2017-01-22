@@ -2,7 +2,7 @@
 import io, nbformat, subprocess;
 import sys, os, importlib, inspect
 from default_ws_config import *
-import wsUtils
+#import wsUtils
 
 import psutil
 
@@ -26,23 +26,35 @@ def findPS(cmd0=None, cmd1=None):
 
     return None
 
+def bookKeeping():
+    global notebooks
+    cwd=os.getcwd()
+    sys.path.append(cwd)
+    if (os.path.islink(sys.argv[0])):
+        link = os.readlink(sys.argv[0])
+        sys.path.append(os.path.dirname(link))
+
 def deploy():
     global notebooks
+    global port
+
     if ( len(sys.argv) > 1 ):
         print ("Importing from ", sys.argv[1]);
         im = importlib.import_module(sys.argv[1])
         notebooks = im.notebooks
+        port = im.port
 
     merge_notebooks(notebooks, 'wsex.ipynb', False);
 
 def run():
+    global port
     proc = findPS(cmd1='jupyter-kernelgateway')
     if ( proc is not None):
         print("Process seems to be running ...")
         return
 
     OPTS='--KernelGatewayApp.api="kernel_gateway.notebook_http" --KernelGatewayApp.prespawn_count=1'
-    PORT='--KernelGatewayApp.port=8501'
+    PORT='--KernelGatewayApp.port=' + str(port)
     URI='wsex.ipynb'
     URI1='--KernelGatewayApp.seed_uri='+URI
 
@@ -86,6 +98,23 @@ def cmd():
         
     merge_notebooks(notebooks)
 
+def test():
+    try:
+        im = importlib.import_module('myconfig');
+        po = im.port
+        nb = im.notebooks
+    except:
+        po = "NONE"
+        nbs= "NONE"
+        pass;
+
+
+    print ("Port: " , po)
+
 if __name__ == '__main__':
+    if ( len(sys.argv) > 1 and sys.argv[1] == 'test'):
+        test()
+        exit();
+    bookKeeping()
     deploy();
     run();
