@@ -39,9 +39,11 @@ def DetermineSeperator(line):
 def getAuraDF(link):
     f = urllib.request.urlopen(link)
     js = f.read().decode('UTF-8')
+    fjs=re.sub('[\n\r|\r\n|\n\s*]+', '\n', js)
+    js=re.sub('^\n', '', fjs)
     if (js.find("$rs=") > 0):
         js = js[js.find("$rs=")+5:]
-        #print js[0:100]
+        #print(js[0:100])
         data = json.loads(js)
         df=pd.DataFrame(data['rows'],columns=data['colnames'])
         return df
@@ -56,10 +58,12 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
         print ("ERROR: *** " +fileName + " does not exist");
         return None;
     sep = seperator or ",";
-    
-    if (not fileName.startswith("http")):
+    df1=None
+    if (fileName.startswith("http")):
+        df1 = getAuraDF(fileName)
+    else:
         if fileName.endswith(".xlsx"): 
-           df1 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
+            df1 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
         elif ("/aura/" in fileName):
             df1 = getAuraDF(fileName);
             return df1
@@ -77,7 +81,8 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
 
     
 def LoadDataSet(fileOrString, columns=None, 
-                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None, index_col=None,sheetname=0):
+                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None,
+                index_col=None,sheetname=0):
     if (fileOrString.find("\n") >=0 ):
         ps = [line.strip() for line in fileOrString.split('\n')
                 if line.strip() != '' and not line.startswith("#") ];
@@ -89,7 +94,7 @@ def LoadDataSet(fileOrString, columns=None,
         df1 = pd.DataFrame(ns[1:], columns=ns[0]);
     else:               
         df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, 
-				usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname)     
+                    usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
