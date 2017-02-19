@@ -8,6 +8,7 @@ from IPython.display import HTML
 import dateutil;
 import json;
 import urllib.request;
+import re
 
 import matplotlib
 #matplotlib.style.use('ggplot')
