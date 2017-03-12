@@ -62,7 +62,7 @@ Help:
 flask_ws port
 '''
 def start():
-    port = 8500 if len(sys.argv) < 2 else sys.argv[1]
+    port = 8080 if len(sys.argv) < 2 else sys.argv[1]
     print( "Starting at port: ", port)
     app.run(debug=True, host="0.0.0.0", port=port)
 
