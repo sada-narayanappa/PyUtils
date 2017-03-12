@@ -24,7 +24,7 @@ from scipy	import stats;
 import sklearn;
 import sklearn.ensemble;
 import sklearn.neighbors
-from sklearn.preprocessing import StandardScaler
+#from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 from sklearn.metrics import *
 from sklearn.metrics import roc_curve, auc
@@ -47,7 +47,7 @@ from sklearn.externals.six import StringIO
 # -*- coding: utf-8 -*-
 def run_cv(X,y,clf_class,printDebug = False , clf=None):
     # Construct a kfolds object
-    kf = sklearn.model_selection.KFold(len(y),n_folds=5,shuffle=True)
+    kf = sklearn.model_selection.KFold(len(y),n_splits=5,shuffle=True)
     y_pred = y.copy()
     
     # Iterate through folds\
