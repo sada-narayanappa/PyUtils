@@ -8,7 +8,7 @@ from IPython.display import HTML
 import os
 import glob;
 import re;
-plt.style.use('fivethirtyeight') # Good looking plots
+#plt.style.use('fivethirtyeight') # Good looking plots
 pd.set_option('display.max_columns', None) # Display any number of columns
 import platform
 import matplotlib
