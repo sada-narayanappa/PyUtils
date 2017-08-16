@@ -63,7 +63,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     if (fileName.startswith("http")):
         df1 = getAuraDF(fileName)
     else:
-        if fileName.endswith(".xlsx"): 
+        if fileName.endswith(".xlsx") or fileName.endswith(".xlsm"): 
             df1 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
         elif ("/aura/" in fileName):
             df1 = getAuraDF(fileName);
