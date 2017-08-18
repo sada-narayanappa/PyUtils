@@ -83,7 +83,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     
 def LoadDataSet(fileOrString, columns=None, 
                 debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None,
-                index_col=None,sheetname=0):
+                index_col=None,sheetname=0, **kwargs):
     if (fileOrString.find("\n") >=0 ):
         ps = [line.strip() for line in fileOrString.split('\n')
                 if line.strip() != '' and not line.startswith("#") ];
@@ -92,7 +92,7 @@ def LoadDataSet(fileOrString, columns=None,
         else:
             sep = seperator;
         ns = [p.split(sep) for p in ps]
-        df1 = pd.DataFrame(ns[1:], columns=ns[0]);
+        df1 = pd.DataFrame(ns[1:], columns=ns[0], **kwargs);
     else:               
         df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, 
                     usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname)     

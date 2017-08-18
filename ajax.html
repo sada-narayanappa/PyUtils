@@ -61,10 +61,10 @@ gu.cleanPyOut = function (out) {
             }
         }
     } catch(e){
-        console.log("excuted: " + typeof(e) )
+        console.log("Error while excuting: " + typeof(e) )
     }
     if ( typeof(gu) != "undefined" ){
-        //console.log("Output: " + gu.lastJSOut)
+        console.log("Output: " + gu.lastJSOut)
     }
     return gu.lastJSOut;
 }
@@ -77,24 +77,31 @@ gu.callPython=function(cmd, cbFunc) {
     }
     var newCBFunc;
     if (typeof(cbFunc) == "undefined" ) {
+        //gu.ln("**NO CALLBACL SPECIFIED")
         cbFunc = gu.cleanPyOut
     }
     if ( cbFunc != gu.cleanPyOut ){
-        newCBFunc= function(out1) { out = gu.cleanPyOut(out1); cbFunc(out); }
+        newCBFunc= function(out1) { out = gu.cleanPyOut(out1);  cbFunc(out); }
     }else{
         newCBFunc = cbFunc
     }
-    console.log(cmd)
+//    console.log(">>:", cmd, newCBFunc)
     var kernel = Jupyter.notebook.kernel;
 
 //    var callbacks = {shell: {reply: cbFunc    }};
     var callbacks = {shell: {reply: newCBFunc }};
-    //ln("excuting: " + cmd)
+    gu.ln("excuting: " + cmd)
     kernel.execute(
       "print('only the success/fail status of this code is reported')",
       callbacks,
       {user_expressions:  {out1: cmd}  }
     ); 
+}
+
+gu.callPythonE=function(cmd, cbFunc) {
+    cmd1 = "eval( '''\n" + cmd + "\n''' )"
+    gu.ln(cmd)
+    gu.callPython(cmd1, cbFunc)
 }
 
 gu.ajax = function(url, cbFunc){
@@ -152,6 +159,27 @@ gu.getURL = function(url,cbFunc, noproxy, params) {
         gu.ajax(url, cbFunc)
     }
 }
+gu.getCell = function(v){
+    var cell = Jupyter.notebook.get_cell(v);
+    var code = v+ ' Not found';
+    if ( cell) {
+        code = cell.get_text();
+        $('#status').text(code)
+    }
+    return cell
+}
+
+gu.execCell = function(v){
+    var cell = Jupyter.notebook.get_cell(v);
+    var code = v+ ' Not found';
+    if ( cell) {
+        code = cell.get_text();
+        $('#status').text(code)
+        cell.execute()
+    }
+    return cell}
+
+    
 gu.callPython($('#pycode').val(), gu.cleanPyOut);
 </script>
 
@@ -194,6 +222,21 @@ input[type=button] {
     border-right: 1px dotted black;
     background-color: #f0f0f0;
 }
+input[type=text] {
+    text-decoration: none;
+    color: #777777;
+    line-height: 1.5em;
+    display: inline-block;
+    padding-left: 10px;
+    float:left;
+    padding-right: 10px;
+    font-family: sans-serif;
+    border-top: 0px solid blue;
+    border-bottom: 1px solid #cccccc;;
+    border-left: none;
+    border-right: 1px dotted black;
+    background-color: #fefefe;
+}
 input[type=button]:hover{ 
     background-color: #cccccc;
     border-color:#333;
@@ -232,6 +275,11 @@ http://www.cs.du.edu/~snarayan/sada/index.shtml
 <input type="button" value="Goog Fin" onclick="gu.getURL('http://finance.google.com/finance/info?client=ig&q=AAPL', callBackFunc)" />
 <input type="button" value="google.c" onclick="gu.getURL('http://google.com', callBackFunc)" />
 <input type="button" value="GO" onclick="gu.getURL($('#url').text(), callBackFunc)" />
-<input type="button" value="CMD" onclick="gu.callPython($('#pycode').val(), gu.noop)" />   
- </div>
+<input type="button" value="CMD" onclick="gu.callPythonE( $('#status').val(), gu.noop)" />   
+
+<input id=cell type="text" value="0" size=5" />
+<input type="button" value="getCELL" onclick="gu.getCell( $('#cell').val())" />   
+<input type="button" value="execCell" onclick="gu.execCell( $('#cell').val())" />   
+
+</div>
 ABOVE OPTIONAL  -->

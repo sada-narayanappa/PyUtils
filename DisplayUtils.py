@@ -107,7 +107,7 @@ a.l          # display latex version of the matrix
 from IPython.display import display, Math, Latex
 import numpy as np
 import re
-class A:
+class LA:
     print_width = 120;
 
     def dtype(self):
@@ -187,8 +187,8 @@ class A:
         return s;
 
     @staticmethod
-    def M(m, name="", call_display=True, showdim=True):
-        np.set_printoptions(precision=2, linewidth=180)
+    def M(m, name="", call_display=True, showdim=True, precision=4):
+        np.set_printoptions(precision=precision, linewidth=180)
         name = name + " =" if name != "" else ""
         dim = "";
         if (showdim):
@@ -213,7 +213,7 @@ class A:
     def display(*M):
         s = ""
         for m in M:
-            s+= A.M(m, call_display=False, showdim=False);
+            s+= LA.M(m, call_display=False, showdim=False);
         display(Math(s))
 
     def d(self):
