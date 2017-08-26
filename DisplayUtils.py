@@ -277,9 +277,9 @@ def searchDF(df, s="", cols=[], maxRows=10):
             if (len(cols) > 0 and not c in cols):
                 break;
             if ( str(c).find(s) >= 0):
+                maxRows = maxRows -1;
                 rows.append(i)
                 break;
-        maxRows = maxRows -1;
         if (maxRows ==0):
             break
     df1 = df.iloc[rows];
@@ -290,8 +290,8 @@ def colTypesDF(df):
     dfTypes=pd.DataFrame(df.dtypes)
     dfTypes=dfTypes.transpose()
     cols=[];
-    for c in dfTypes.columns:
-        nc = (str(c) + "\n\t(" + str(dfTypes.iloc[0][c])+")")
+    for i, c in enumerate(dfTypes.columns):
+        nc = (str(c) + "\n\t(" + str(dfTypes.iloc[0][i])+")")
         cols.append(nc);
     return cols;
 
@@ -418,13 +418,13 @@ def addDescribe(df,h):
    
     return ret;
     
-def displayDFs(dfs, maxrows = 6, showTypes = True, showIcons=True, 
-               search=None, cols=[],  showStats = False):
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, 
+               search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
         
-    otr = "<table>"
+    otr = "<table>" if (len(dfs) >1) else "<table width=100%>"
     bg1="#efefef";
     bg2="lightblue";
     bg = bg2;
@@ -435,12 +435,26 @@ def displayDFs(dfs, maxrows = 6, showTypes = True, showIcons=True,
             
         bg = bg2 if ( bg == bg1 ) else bg1;
         dim = str(nd.shape[0]) + " rows x " + str(nd.shape[1]) + " columns";
-        d = nd[:maxrows] if (not search) else searchDF(nd,search,cols);
+        d = nd[startrow:startrow+maxrows] if (not search) else searchDF(nd,search,cols);
             
         if (showTypes):
             cols=colTypesDF(d);
             d.columns = cols
         h = d.to_html();
+        #
+        if(len(dfs) == 1):
+            h = h.replace("<table ", "<table width=100% ")
+        #
+        if (editable):
+            h = h.replace("<td", "<td contenteditable ")
+        #
+        if (useMyStyle):
+            h = h.replace("class='dataframe'", "class='ourTableStyle' ")
+            h = h.replace('class="dataframe"', "class='ourTableStyle' ")
+            h = h.replace('<table ', "<table cellpadding=0 cellspacing=0 ")
+            #h = h.replace("border=", "border=")
+        
+            
         
         shIcons = showIcons; 
         if ( type(showIcons) ==list and type(showIcons) != tuple):
@@ -451,11 +465,14 @@ def displayDFs(dfs, maxrows = 6, showTypes = True, showIcons=True,
         if (showStats and nd.shape[0] > 0):
             h = addDescribe(nd,h);
             
-        otr += "<td bgcolor=" + bg + ">" + dim + "<br>" + h + "</td><td>&nbsp;</td>"
+        tabSep = "<td>&nbsp;</td>" if len(dfs) > 1 else "";
+        otr += "<tr><td style='text-align:eft;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}<tr>".format(tabSep)
     otr += "</table>"
-    display(HTML(otr))
+    if (not donotDisplay):
+        display(HTML(otr))
+    return otr
 
-def formatContent(c):       
+def formatContentDELETEIT(c):       
     c1 = str(c).lower().strip()
     g=[k.lower().strip() for k in "complete, finished, success, Yes".split(",") ]
     r=[k.lower().strip() for k in "error, err, failed, no".split(",") ]
