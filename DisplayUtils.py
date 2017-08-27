@@ -418,13 +418,13 @@ def addDescribe(df,h):
    
     return ret;
     
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, 
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, id=None,
                search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
         
-    otr = "<table>" if (len(dfs) >1) else "<table width=100%>"
+    otr = "<table>" if (len(dfs) >1) else "<table wwidth=100%>"
     bg1="#efefef";
     bg2="lightblue";
     bg = bg2;
@@ -435,15 +435,25 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True,
             
         bg = bg2 if ( bg == bg1 ) else bg1;
         dim = str(nd.shape[0]) + " rows x " + str(nd.shape[1]) + " columns";
-        d = nd[startrow:startrow+maxrows] if (not search) else searchDF(nd,search,cols);
+        
+        if(search):
+            d =searchDF(nd,search,cols);
+        else:
+            if( startrow+maxrows > len(nd) ):
+                d = nd[-maxrows:] 
+            else:
+                d = nd[startrow:startrow+maxrows] 
             
         if (showTypes):
             cols=colTypesDF(d);
             d.columns = cols
         h = d.to_html();
         #
+        if(id):
+            h = h.replace("<table ", "<table id='{}' ".format(id) )
+        #
         if(len(dfs) == 1):
-            h = h.replace("<table ", "<table width=100% ")
+            h = h.replace("<table ", "<table wwidth=100% ")
         #
         if (editable):
             h = h.replace("<td", "<td contenteditable ")
@@ -466,7 +476,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True,
             h = addDescribe(nd,h);
             
         tabSep = "<td>&nbsp;</td>" if len(dfs) > 1 else "";
-        otr += "<tr><td style='text-align:eft;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}<tr>".format(tabSep)
+        otr += "<tr><td style='text-align:left;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}<tr>".format(tabSep)
     otr += "</table>"
     if (not donotDisplay):
         display(HTML(otr))
