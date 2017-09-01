@@ -367,16 +367,16 @@ def getDesc(df, idx):
 
 
 def getIcons(df,h):
-    h1="<tr><td></td>";
+    h1="<tr><td align=center></td >";
     idx=0;
-    for c in df.columns:
+    for i, c in enumerate(df.columns):
         fig = None 
         try:
            fig = createIcon(df,idx);
         except:
            print ("Error while getting icon for ", c);
         if ( fig is None):
-            h1 = h1 + "<td></td>";
+            h1 = h1 + "<td align=center></td>";
         else:
             
             #fig = "/files/" + fig;
@@ -393,7 +393,7 @@ def getIcons(df,h):
             #h1 = h1 + "/> <span><img src='"+ fig + "' /><br /></span></a>";
 #            h1 = h1 +"onmouseover='this.width=500;' onmouseout='this.width=64' >" 
                         
-            h1 = h1 + "</td>";  
+            h1 = h1 + "<br/>" + str(df.dtypes[i]) + "</td>";  
             
         idx=idx + 1;          
     h1 = h1 + "</tr>\n";
@@ -425,7 +425,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, i
         dfs = [dfs];
         
     otr = "<table>" if (len(dfs) >1) else "<table wwidth=100%>"
-    bg1="#efefef";
+    bg1="#ffffff";
     bg2="lightblue";
     bg = bg2;
     for i, nd in enumerate(dfs):
