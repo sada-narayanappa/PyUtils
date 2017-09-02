@@ -74,7 +74,7 @@ def Excel2Html(file, overwrite=True, show=True, leaveItOpen = True,
 # graphFunction(lambda x: log(x), 0,6, "b", "$x$", "$z$", "",'.',"$log(x)$") #, 'o', "sada")
 
 def graphFunction(formula, xmin, xmax, c=None, xlabel= None, ylabel=None, title=None, marker=None, 
-		  label=None, legend=True, legendLoc=2):
+                    label=None, legend=True, legendLoc=2):
     x = np.linspace(xmin, xmax, 100)
     if ( callable(formula)):
         y = np.apply_along_axis(formula, 0, x)
@@ -540,10 +540,10 @@ def PCAPlot(dfL, predictColumn, s =10):
 # x must be in percentages of use - otherwise convert to percentages before this call
 #
 def plotPercentHist(x, bins=10, rangeI=(0.0,1.0)):
-		  h, be = np.histogram(x,bins=bins,range=rangeI, normed=True)
-		  plt.bar(be[:-1],h*100,width=be[1])
-		  plt.xticks(be);
-		  return h,be
+    h, be = np.histogram(x,bins=bins,range=rangeI, normed=True)
+    plt.bar(be[:-1],h*100,width=be[1])
+    plt.xticks(be);
+    return h,be
 
 #def pltBar(x, labels=None, bottom=None):
    #x = x.value_counts()

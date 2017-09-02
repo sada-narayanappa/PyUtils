@@ -90,7 +90,7 @@ gu.callPython=function(cmd, cbFunc) {
 
 //    var callbacks = {shell: {reply: cbFunc    }};
     var callbacks = {shell: {reply: newCBFunc }};
-    gu.ln("excuting: " + cmd)
+//    gu.ln("excuting: " + cmd)
     kernel.execute(
       "print('only the success/fail status of this code is reported')",
       callbacks,
