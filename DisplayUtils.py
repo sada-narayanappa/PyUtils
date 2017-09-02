@@ -19,6 +19,7 @@ from matplotlib import colors
 import inspect
 import re;
 import json;
+import datetime
 
 if (platform == "Windows"):
     from win32com.client import Dispatch
@@ -589,7 +590,9 @@ def UpdateDataFrameFromHTML(html, dff=None):
 
 
     nRows = len(rows)
-    nCols = len(vals)/nRows
+    nCols = int(len(vals)/nRows)
+    
+    #print ("===> Reshaping", nRows, nCols);
     vals = np.array(vals).reshape(nRows, nCols)
 
     #print( vals, len(vals), nCols, nRows)
@@ -609,7 +612,7 @@ def UpdateDataFrameFromHTML(html, dff=None):
     for i, r in dft.iterrows():
         dff.loc[i:i,:] = dft.loc[i:i,:]
 
-navigation_buttons = '''
+navigation_buttons_common = '''
 <script>
 jQuery.fn.reverse = [].reverse;
 
@@ -626,13 +629,13 @@ function UpdateTableShowRows( tab_maxRows, tab_maxDisp, tableID, out) {
         return;
 
     var i=0;
-    trs = '<TABLE_ID> tr'.replace('<TABLE_ID>', tableID)
+    trs = '{0} tr'.format(tableID)
     $(trs).find('th:first').each(function ()
     {
         $(this).text( o.idxs[i++]);
     });
     i=o.vals.length-1;
-    tds = '<TABLE_ID> td'.replace('<TABLE_ID>', tableID)
+    tds = '{0} td'.format(tableID)
     $(tds).reverse().each(function ()
     {
         $(this).text(o.vals[i--]);
@@ -663,11 +666,12 @@ function PrevPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
         return '';
     }
     
-    startRow = g - 2*tab_maxDisp+2 
-    
-    if(startRow < 0){
+    topRow=g-tab_maxDisp
+    if(topRow < 0){
         return;
     }
+    startRow = g - 2*tab_maxDisp +2
+    
     
     command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, startRow, tab_maxDisp )
     cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
@@ -683,7 +687,7 @@ function NextPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
         alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
         return '';
     }
-    if(g+tab_maxDisp > tab_maxRows){
+    if(g >= tab_maxRows-1){
         return
     }
     command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g , tab_maxDisp )
@@ -703,25 +707,35 @@ function SaveDataFrameFromHTML(tableID, dataFrameVariable){
     gu.callPython(cmd)
 }
 
-function ShowSearchResults(html){
+function ShowSearchResults(resultsDIV, html){
     //console.log("===>GOT:" + html)
     html = html.trim()
-    $('#<TABLE_ID>_searchResults').html(html)
+    if ( html.startsWith("'") && html.endsWith("'") ){
+        html = html.slice(1, -1);
+    }
+    $(resultsDIV).html("Search Results:<br/>" + html)
 }
 function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
-    s = $('#<TABLE_ID>_search').val()
+    v1 = tableID +'_search'
+    v2 = tableID +'_searchResults'
+    
+    
+    s = $(v1).val()
     if (s.length <=0) {
-        $('#<TABLE_ID>_searchResults').html('')
+        $(v2).html('')
+        $(v2).css('')
         return
     }
-    cb  = ShowSearchResults;
-    cmd = "getHTMLTableRowsFromSearch({0}, searchString={1}, maxRows={2})".format(dataFrameVariable,s, tab_maxDisp);
-    
+    cb  = ShowSearchResults.bind(null, v2);
+    cmd = "getHTMLTableRowsFromSearch({0}, searchString='{1}', maxRows={2})".format(dataFrameVariable,s, tab_maxDisp);
+    //console.log(cmd)
     gu.callPython(cmd, cb)
 }
-
 </script>
-<div style="display:block;height:30px">
+'''
+
+navigation_buttons = '''
+<div style="display:block;height:20px">
 <input type=button value='GO>>' onclick="TableShowRows( $('#<TABLE_ID>_goto').val(), NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
 <input id='<TABLE_ID>_goto' type=text value='9'  size=4 >
 <input type=button value=' << ' onclick="PrevPage( NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
@@ -730,17 +744,16 @@ function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
 <input type=button value='Save' onclick="SaveDataFrameFromHTML('#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>');">
 <input type=button value='Search >>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
 <input id='<TABLE_ID>_search' type=text value=''" size=10>
-<div id='<TABLE_ID>_searchResults'></div>
 </div>
 ''';
 
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, tableID=None, showNav= False,
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, tableID=None, showNav= True,
                search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
         
-    otr = "<table>" if (len(dfs) >1) else "<table wwidth=100%>"
+    otr = "<table style='vertical-align: top;'>" if (len(dfs) >1) else "<table wwidth=100% style='vertical-align: top;'><tr>"
     bg1="#ffffff";
     bg2="lightblue";
     bg = bg2;
@@ -788,27 +801,36 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
         if (showStats and nd.shape[0] > 0):
             h = addDescribe(nd,h);
         
-        #
-        if(tableID):
-            h = h.replace("<table ", "<table id='{}' ".format(tableID) )
             
         if(showNav):
-            if(tableID is None):
-                tableID = "tableID_" + int(datetime.datetime.now().timestamp()*1000)
+            if(tableID is None or len(dfs) > 1):
+                dttm = str(int(datetime.datetime.now().timestamp()*1000) )
+                tableID = "tableID_" + dttm 
+                
                 h = h.replace("<table ", "<table id='{}' ".format(tableID) )
 
             inspect.stack()[1][0].f_globals['DFF_PY_VAR_'+tableID] = nd
 
-            op = '''<div id='tableresults1' style='ddisplay:none;width:100%' >{}</div>'''.format(h+navigation_buttons)
+            op = '''<div id='tab_<TABLE_ID>' style='ddisplay:none;width:100%' >
+            {}
+            <div id='<TABLE_ID>_searchResults'></div>
+            </div>'''.format(h + navigation_buttons)
             op = op.replace("<TABLE_ID>", tableID).replace('NUMROWS', str(len(nd))).replace('MAXDISP', str(maxrows) )
             h = op
+        else:
+            if(tableID):
+                h = h.replace("<table ", "<table id='{}' ".format(tableID) )
+
     
         
         tabSep = "<td>&nbsp;</td>" if len(dfs) > 1 else "";
-        otr += "<tr><td style='text-align:left;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}<tr>".format(tabSep)
-    otr += "</table>"
+        otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}".format(tabSep)
+    otr += "</tr></table>"
     if (not donotDisplay):
         display(HTML(otr))
+        
+    if (showNav):
+        otr = otr +  navigation_buttons_common;
     return otr
 
 

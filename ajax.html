@@ -64,7 +64,7 @@ gu.cleanPyOut = function (out) {
         console.log("Error while excuting: " + typeof(e) )
     }
     if ( typeof(gu) != "undefined" ){
-        console.log("Output: " + gu.lastJSOut)
+        //console.log("Output: " + gu.lastJSOut)
     }
     return gu.lastJSOut;
 }
@@ -90,7 +90,7 @@ gu.callPython=function(cmd, cbFunc) {
 
 //    var callbacks = {shell: {reply: cbFunc    }};
     var callbacks = {shell: {reply: newCBFunc }};
-//    gu.ln("excuting: " + cmd)
+    //gu.ln("excuting: " + cmd)
     kernel.execute(
       "print('only the success/fail status of this code is reported')",
       callbacks,
