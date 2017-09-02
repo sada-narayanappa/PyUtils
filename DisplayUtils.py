@@ -16,13 +16,15 @@ from sklearn import neighbors, datasets, cluster, preprocessing, decomposition
 from sklearn.decomposition import PCA
 from Features import prepareDF
 from matplotlib import colors
-
+import inspect
+import re;
+import json;
 
 if (platform == "Windows"):
-	from win32com.client import Dispatch
-	from win32com.client.gencache import EnsureDispatch
-	from win32com.client import constants
-	from IPython.display import IFrame
+    from win32com.client import Dispatch
+    from win32com.client.gencache import EnsureDispatch
+    from win32com.client import constants
+    from IPython.display import IFrame
 
 np.set_printoptions(precision=2, linewidth=1000)
 
@@ -330,9 +332,9 @@ def plotPercentHist(x, bins=10, rangeI=(0.0,1.0)):
 #def pltBar(x, labels=None, bottom=None):
    #x = x.value_counts()
 #plt.bar(x, range(0, len(x)), bottom=bottom);
-	#if (labels is None):
-		#labels = range(0,len(x));
-	#plt.xticks(labels);
+    #if (labels is None):
+    #labels = range(0,len(x));
+    #plt.xticks(labels);
 
 import math
 import StatUtils
@@ -546,8 +548,68 @@ def addDescribe(df,h):
    
     return ret;
 
-def addNavButtons():
-    navigation_buttons = '''
+def getHTMLTableRows(dff, startRow=0, maxRows = 5):
+    
+    startRow = startRow if startRow >=0 else 0;
+    e = startRow + maxRows
+    
+    if (e > len(dff)):
+        ddd=dff[-maxRows:]
+    else:
+        ddd=dff[startRow:e]
+
+    vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+    idxs = [""] + (list(ddd.index) )
+
+    
+    #ret = '''"vals": {}; "idxs": {}'''.format(json.dumps(vals), json.dumps(idxs))
+    ret = '''{{"vals": {}, "idxs": {}}}'''.format(json.dumps(vals), (idxs) )
+    
+    ret = ret.replace("'", '"')
+    
+    return ret
+
+def getHTMLTableRowsFromSearch(dff, searchString=None, maxRows=10):
+    searchString = str(searchString)
+    if (searchString is None or len(str(searchString).strip()) < 0):
+        return '';
+    
+    ddd = searchDF(dff, s=searchString, maxRows=maxRows)
+    
+    if(len(ddd) <= 0 ):
+        return ''    
+    return ddd.to_html()
+
+
+def UpdateDataFrameFromHTML(html, dff=None):
+
+    vals = re.findall('<td.*?>(.*?)</td>',  html, flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+    idxs = re.findall('<th.*?>(.*?)</th>',  html, flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+    rows = re.findall('<tr.*?>(.*?)</tr>',  html, flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+
+
+    nRows = len(rows)
+    nCols = len(vals)/nRows
+    vals = np.array(vals).reshape(nRows, nCols)
+
+    #print( vals, len(vals), nCols, nRows)
+
+    dft = pd.DataFrame(vals)
+    dft.index = idxs
+    if (dff is None ):
+        return dft
+    
+    dft.columns= dff.columns;
+    dft.index  = dft.index.astype(dff.index)
+
+    for i,dt in enumerate(dft.dtypes):
+        if ( dt != dff.dtypes[i]):
+            dft[dft.columns[i]] = dft[dft.columns[i]].astype(dff.dtypes[i])
+
+    for i, r in dft.iterrows():
+        dff.loc[i:i,:] = dft.loc[i:i,:]
+
+navigation_buttons = '''
 <script>
 jQuery.fn.reverse = [].reverse;
 
@@ -659,7 +721,7 @@ function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
 }
 
 </script>
-<div style="display:block;height:60px">
+<div style="display:block;height:30px">
 <input type=button value='GO>>' onclick="TableShowRows( $('#<TABLE_ID>_goto').val(), NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
 <input id='<TABLE_ID>_goto' type=text value='9'  size=4 >
 <input type=button value=' << ' onclick="PrevPage( NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
@@ -668,17 +730,12 @@ function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
 <input type=button value='Save' onclick="SaveDataFrameFromHTML('#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>');">
 <input type=button value='Search >>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
 <input id='<TABLE_ID>_search' type=text value=''" size=10>
-<div id='<TABLE_ID>_searchResults'>
-Hello     $('#<TABLE_ID>_searchResults').html(html)
-
-</div>
+<div id='<TABLE_ID>_searchResults'></div>
 </div>
 ''';
 
-
-
 def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, tableID=None, showNav= False,
-               search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False):
+               search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
@@ -708,9 +765,6 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
             d.columns = cols
         h = d.to_html();
         #
-        if(tableID):
-            h = h.replace("<table ", "<table id='{}' ".format(tableID) )
-        #
         if(len(dfs) == 1):
             h = h.replace("<table ", "<table wwidth=100% ")
         #
@@ -733,11 +787,29 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
             h = getIcons(nd,h);
         if (showStats and nd.shape[0] > 0):
             h = addDescribe(nd,h);
+        
+        #
+        if(tableID):
+            h = h.replace("<table ", "<table id='{}' ".format(tableID) )
             
+        if(showNav):
+            if(tableID is None):
+                tableID = "tableID_" + int(datetime.datetime.now().timestamp()*1000)
+                h = h.replace("<table ", "<table id='{}' ".format(tableID) )
+
+            inspect.stack()[1][0].f_globals['DFF_PY_VAR_'+tableID] = nd
+
+            op = '''<div id='tableresults1' style='ddisplay:none;width:100%' >{}</div>'''.format(h+navigation_buttons)
+            op = op.replace("<TABLE_ID>", tableID).replace('NUMROWS', str(len(nd))).replace('MAXDISP', str(maxrows) )
+            h = op
+    
+        
         tabSep = "<td>&nbsp;</td>" if len(dfs) > 1 else "";
         otr += "<tr><td style='text-align:left;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}<tr>".format(tabSep)
     otr += "</table>"
     if (not donotDisplay):
         display(HTML(otr))
     return otr
+
+
 
