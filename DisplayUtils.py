@@ -264,6 +264,134 @@ class LA:
         ret = A(r)
         return ret
 
+def formatContentDELETEIT(c):       
+    c1 = str(c).lower().strip()
+    g=[k.lower().strip() for k in "complete, finished, success, Yes".split(",") ]
+    r=[k.lower().strip() for k in "error, err, failed, no".split(",") ]
+    y=[k.lower().strip() for k in "pending, ongoing, current".split(",") ]
+    s = ""
+    if (c1 in g):
+         s = "bgcolor=lightgreen";
+    elif (c1 in r):
+         s = "bgcolor=#FFAEAE";
+    elif (c1 in y):
+         s = "bgcolor=lightyellow";
+        
+    return "<td " + s + ">" + str(c) + "</td>"
+    
+#if not os.path.exists("temp"):
+#    os.mkdir("temp")
+
+#Lets Clean up before we start
+[os.unlink(f) for f in glob.glob("./temp/*.png")]
+    
+def PCAPlot(dfL, predictColumn, s =10):
+    predictColumnIdx = predictColumn+'_idx'
+    
+    ny = dfL[predictColumn]
+    df = prepareDF(dfL, makeCopy=True)
+    df = df.drop(predictColumn, axis=1)
+    pca= PCA(n_components= 2)
+    pca.fit(df)
+    nX = pca.transform(df)
+    
+    le = preprocessing.LabelEncoder()
+    labels = le.fit_transform(ny)
+    le.classes_
+    
+    nDf = pd.DataFrame(nX)
+    nDf[predictColumn] = ny;
+    nDf[predictColumnIdx] = labels;
+    
+    c="r,g,b,c,m,y,k,w".split(",")
+    
+    for i,j in enumerate(le.classes_):
+        dd = nDf[nDf[predictColumnIdx] == i]
+        ll = str(le.classes_[i]);
+        lb = ll + ":" + str(i) if ( ll != str(i)) else str(ll);
+        #print( i,j )
+        #plt.scatter(dd[[0]], dd[[1]], s=40, c=dd[predictColumnIdx].apply(lambda x:c[x]));
+        plt.scatter(dd[[0]], dd[[1]], s=40, c=dd[predictColumnIdx].apply(lambda x:c[x%len(c)]), label=lb);
+    
+    plt.legend();
+
+    return nDf;
+
+
+#
+# x must be in percentages of use - otherwise convert to percentages before this call
+#
+def plotPercentHist(x, bins=10, rangeI=(0.0,1.0)):
+    h, be = np.histogram(x,bins=bins,range=rangeI, normed=True)
+    plt.bar(be[:-1],h*100,width=be[1])
+    plt.xticks(be);
+    return h,be
+
+#def pltBar(x, labels=None, bottom=None):
+   #x = x.value_counts()
+#plt.bar(x, range(0, len(x)), bottom=bottom);
+	#if (labels is None):
+		#labels = range(0,len(x));
+	#plt.xticks(labels);
+
+import math
+import StatUtils
+def plthist(x, y=None, bins='auto', alpha=0.75, title=None, grid = True, xlabel=None, 
+            ylabel=None, label=None, axis=None, subplot=None, 
+            facecolor=None, ablines=[], legend=False,
+            low=None, high=None,  
+           ):
+    c='brygcmykw';
+    if(subplot):
+        plt.subplot(subplot)
+        
+    N, bins, patches = plt.hist(x, bins=bins, alpha=alpha, label=label, facecolor=facecolor)
+
+    if (low is not None and high is None ):
+        high = math.inf
+    if (high is not None and low is None):
+        low = -math.inf
+    if(low is not None and high is not None ):
+        ca=plt.gca()
+        w = min(high, max(x)) - max(low, min(x));
+        l = max(low, min(x))
+        
+        hm = max(N)/4
+        rect = plt.Rectangle( (l,0), w,hm, alpha=.6, facecolor='y')
+        ca.add_patch(rect)
+        
+        rx, ry = rect.get_xy()
+        cx = rx + rect.get_width()/2.0
+        cy = ry + rect.get_height()/2.0
+        r = StatUtils.NormProb(x, low,high) * 100
+        r1 = "Prob: {0:0.0f}-{1:0.0f} : {2:0.2f}%".format(low, high,r)
+        plt.annotate(str(r1), (cx, cy), color='w', weight='bold', fontsize=8, ha='center', va='center')
+        
+    #print(low, high)    
+        
+        
+    if(grid is not None): plt.grid(grid)
+    if(xlabel is not None): plt.xlabel(xlabel)
+    if(ylabel is not None): plt.ylabel(ylabel)
+    if(axis is not None):  plt.axis(axis)
+    if(title is not None): plt.title(title)
+    
+    for i,f in enumerate(ablines):
+        try:
+            methodToCall = getattr(x, f)
+            v = methodToCall();
+            #plt.axvline(v, color='b', linestyle='dashed', linewidth=2, )
+            lab = f + " : " + "{0:0.2f}".format(v)
+            lab = f
+            plt.axvline(v,  color=c[i%len(c)], linestyle='dashed', linewidth=1, label=lab)
+            #plt.text(v+.1, 75, lab ,rotation=90)
+            #plt.annotate(lab, xy=(v, 1), xytext=(v, 75),arrowprops=dict(facecolor='black', shrink=0.05),)
+            
+        except:
+            print("Method '{}' not found".format(f))
+            
+    if (legend):
+        leg=plt.legend(loc='best', frameon=1)    
 
 '''
 =======================================================================================
@@ -417,8 +545,139 @@ def addDescribe(df,h):
     ret = ret.replace("<th>", "<th bgcolor=#6495ed>")
    
     return ret;
+
+def addNavButtons():
+    navigation_buttons = '''
+<script>
+jQuery.fn.reverse = [].reverse;
+
+function UpdateTableShowRows( tab_maxRows, tab_maxDisp, tableID, out) {
+    if(out.length <=10)
+        return
+        
+    o = JSON.parse(out.slice(1, -1))
+    // console.log("==>" + out );
+    // console.log("==>VALS\\n " + o.vals );
+    // console.log("==>IDXX " + o.idxs + " ++" + tableID);
+
+    if (o.idxs.length <=0)
+        return;
+
+    var i=0;
+    trs = '<TABLE_ID> tr'.replace('<TABLE_ID>', tableID)
+    $(trs).find('th:first').each(function ()
+    {
+        $(this).text( o.idxs[i++]);
+    });
+    i=o.vals.length-1;
+    tds = '<TABLE_ID> td'.replace('<TABLE_ID>', tableID)
+    $(tds).reverse().each(function ()
+    {
+        $(this).text(o.vals[i--]);
+    });
     
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, id=None,
+}
+
+function TableShowRows( gg, tab_maxRows, tab_maxDisp, tableID, dataframeName ) {
+    g = Number.parseInt(gg)
+    if (isNaN(g) ){
+        alert("hmmmm value: "+ gg + " make no sense" )
+        return '';
+    }
+    var kernel = Jupyter.notebook.kernel;    
+    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g, tab_maxDisp )
+    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
+    gu.callPython( command, cb) ;
+//    console.log("Executing Command: " + command );
+}
+
+function PrevPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
+    last = $(tableID).find('th:last').text()
+
+    g = Number.parseInt(last)
+    
+    if (isNaN(g) ){
+        alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
+        return '';
+    }
+    
+    startRow = g - 2*tab_maxDisp+2 
+    
+    if(startRow < 0){
+        return;
+    }
+    
+    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, startRow, tab_maxDisp )
+    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
+    gu.callPython( command, cb) ;
+//    console.log("Executing Command: " + command );
+
+}
+function NextPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
+    last = $(tableID).find('th:last').text()
+
+    g = Number.parseInt(last)
+    if (isNaN(g) ){
+        alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
+        return '';
+    }
+    if(g+tab_maxDisp > tab_maxRows){
+        return
+    }
+    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g , tab_maxDisp )
+    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
+    gu.callPython( command, cb) ;
+//    console.log("Executing Command: " + command );
+}
+
+function SaveDataFrameFromHTML(tableID, dataFrameVariable){
+    ret = $(tableID).html()
+    s = ret.indexOf('</thead>')
+    if ( s< 0 ) return;
+    s1 = ret.substr(s+10)
+    ret = s1.replace(/\\n/g, '');
+    //console.log(s, ret)
+    cmd = "UpdateDataFrameFromHTML(r\'\'\'{0}\'\'\', {1})".format(ret,dataFrameVariable);
+    gu.callPython(cmd)
+}
+
+function ShowSearchResults(html){
+    //console.log("===>GOT:" + html)
+    html = html.trim()
+    $('#<TABLE_ID>_searchResults').html(html)
+}
+function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
+    s = $('#<TABLE_ID>_search').val()
+    if (s.length <=0) {
+        $('#<TABLE_ID>_searchResults').html('')
+        return
+    }
+    cb  = ShowSearchResults;
+    cmd = "getHTMLTableRowsFromSearch({0}, searchString={1}, maxRows={2})".format(dataFrameVariable,s, tab_maxDisp);
+    
+    gu.callPython(cmd, cb)
+}
+
+</script>
+<div style="display:block;height:60px">
+<input type=button value='GO>>' onclick="TableShowRows( $('#<TABLE_ID>_goto').val(), NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
+<input id='<TABLE_ID>_goto' type=text value='9'  size=4 >
+<input type=button value=' << ' onclick="PrevPage( NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
+<input type=button value=' >> ' onclick="NextPage( NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
+
+<input type=button value='Save' onclick="SaveDataFrameFromHTML('#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>');">
+<input type=button value='Search >>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
+<input id='<TABLE_ID>_search' type=text value=''" size=10>
+<div id='<TABLE_ID>_searchResults'>
+Hello     $('#<TABLE_ID>_searchResults').html(html)
+
+</div>
+</div>
+''';
+
+
+
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, tableID=None, showNav= False,
                search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
@@ -449,8 +708,8 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, i
             d.columns = cols
         h = d.to_html();
         #
-        if(id):
-            h = h.replace("<table ", "<table id='{}' ".format(id) )
+        if(tableID):
+            h = h.replace("<table ", "<table id='{}' ".format(tableID) )
         #
         if(len(dfs) == 1):
             h = h.replace("<table ", "<table wwidth=100% ")
@@ -482,131 +741,3 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, i
         display(HTML(otr))
     return otr
 
-def formatContentDELETEIT(c):       
-    c1 = str(c).lower().strip()
-    g=[k.lower().strip() for k in "complete, finished, success, Yes".split(",") ]
-    r=[k.lower().strip() for k in "error, err, failed, no".split(",") ]
-    y=[k.lower().strip() for k in "pending, ongoing, current".split(",") ]
-    s = ""
-    if (c1 in g):
-         s = "bgcolor=lightgreen";
-    elif (c1 in r):
-         s = "bgcolor=#FFAEAE";
-    elif (c1 in y):
-         s = "bgcolor=lightyellow";
-        
-    return "<td " + s + ">" + str(c) + "</td>"
-    
-#if not os.path.exists("temp"):
-#    os.mkdir("temp")
-
-#Lets Clean up before we start
-[os.unlink(f) for f in glob.glob("./temp/*.png")]
-    
-def PCAPlot(dfL, predictColumn, s =10):
-    predictColumnIdx = predictColumn+'_idx'
-    
-    ny = dfL[predictColumn]
-    df = prepareDF(dfL, makeCopy=True)
-    df = df.drop(predictColumn, axis=1)
-    pca= PCA(n_components= 2)
-    pca.fit(df)
-    nX = pca.transform(df)
-    
-    le = preprocessing.LabelEncoder()
-    labels = le.fit_transform(ny)
-    le.classes_
-    
-    nDf = pd.DataFrame(nX)
-    nDf[predictColumn] = ny;
-    nDf[predictColumnIdx] = labels;
-    
-    c="r,g,b,c,m,y,k,w".split(",")
-    
-    for i,j in enumerate(le.classes_):
-        dd = nDf[nDf[predictColumnIdx] == i]
-        ll = str(le.classes_[i]);
-        lb = ll + ":" + str(i) if ( ll != str(i)) else str(ll);
-        #print( i,j )
-        #plt.scatter(dd[[0]], dd[[1]], s=40, c=dd[predictColumnIdx].apply(lambda x:c[x]));
-        plt.scatter(dd[[0]], dd[[1]], s=40, c=dd[predictColumnIdx].apply(lambda x:c[x%len(c)]), label=lb);
-    
-    plt.legend();
-
-    return nDf;
-
-
-#
-# x must be in percentages of use - otherwise convert to percentages before this call
-#
-def plotPercentHist(x, bins=10, rangeI=(0.0,1.0)):
-    h, be = np.histogram(x,bins=bins,range=rangeI, normed=True)
-    plt.bar(be[:-1],h*100,width=be[1])
-    plt.xticks(be);
-    return h,be
-
-#def pltBar(x, labels=None, bottom=None):
-   #x = x.value_counts()
-#plt.bar(x, range(0, len(x)), bottom=bottom);
-	#if (labels is None):
-		#labels = range(0,len(x));
-	#plt.xticks(labels);
-
-import math
-import StatUtils
-def plthist(x, y=None, bins='auto', alpha=0.75, title=None, grid = True, xlabel=None, 
-            ylabel=None, label=None, axis=None, subplot=None, 
-            facecolor=None, ablines=[], legend=False,
-            low=None, high=None,  
-           ):
-    c='brygcmykw';
-    if(subplot):
-        plt.subplot(subplot)
-        
-    N, bins, patches = plt.hist(x, bins=bins, alpha=alpha, label=label, facecolor=facecolor)
-
-    if (low is not None and high is None ):
-        high = math.inf
-    if (high is not None and low is None):
-        low = -math.inf
-    if(low is not None and high is not None ):
-        ca=plt.gca()
-        w = min(high, max(x)) - max(low, min(x));
-        l = max(low, min(x))
-        
-        hm = max(N)/4
-        rect = plt.Rectangle( (l,0), w,hm, alpha=.6, facecolor='y')
-        ca.add_patch(rect)
-        
-        rx, ry = rect.get_xy()
-        cx = rx + rect.get_width()/2.0
-        cy = ry + rect.get_height()/2.0
-        r = StatUtils.NormProb(x, low,high) * 100
-        r1 = "Prob: {0:0.0f}-{1:0.0f} : {2:0.2f}%".format(low, high,r)
-        plt.annotate(str(r1), (cx, cy), color='w', weight='bold', fontsize=8, ha='center', va='center')
-        
-    #print(low, high)    
-        
-        
-    if(grid is not None): plt.grid(grid)
-    if(xlabel is not None): plt.xlabel(xlabel)
-    if(ylabel is not None): plt.ylabel(ylabel)
-    if(axis is not None):  plt.axis(axis)
-    if(title is not None): plt.title(title)
-    
-    for i,f in enumerate(ablines):
-        try:
-            methodToCall = getattr(x, f)
-            v = methodToCall();
-            #plt.axvline(v, color='b', linestyle='dashed', linewidth=2, )
-            lab = f + " : " + "{0:0.2f}".format(v)
-            lab = f
-            plt.axvline(v,  color=c[i%len(c)], linestyle='dashed', linewidth=1, label=lab)
-            #plt.text(v+.1, 75, lab ,rotation=90)
-            #plt.annotate(lab, xy=(v, 1), xytext=(v, 75),arrowprops=dict(facecolor='black', shrink=0.05),)
-            
-        except:
-            print("Method '{}' not found".format(f))
-            
-    if (legend):
-        leg=plt.legend(loc='best', frameon=1)    
