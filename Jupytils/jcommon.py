@@ -5,7 +5,7 @@ import re;
 import json;
 import os
 import numpy as np
-from IPython.display import HTML, Javascript
+from IPython.display import *
 import pandas as pd
 from datetime import timedelta;
 import datetime;
@@ -23,7 +23,7 @@ import matplotlib
 import dateutil;
 import json;
 import urllib.request;
-from IPython import get_ipython, display
+from IPython import get_ipython
 import os
 import Jupytils
 
@@ -32,12 +32,12 @@ def readFile(file):
         c = f.read().decode().replace('\r\n', '\n')
         return c;
 
-def jlog(*args, debug=False, **kwargs):
+def jlog(*args, debug=False, end=' ', **kwargs):
     if (not debug or 'debug' in kwargs and not kwargs(debug) ):
         return;
 
     for a in args:
-        print(a, end=' ')
+        print(a, end=end)
     for k,v in kwargs.items():
         print ("%s = %s" % (k, v))
 
@@ -57,5 +57,5 @@ def LoadJupytils(abspath=None, debug=False):
     ip.run_line_magic(magic_name="run", line=abspath+"/StatUtils.py")
     ip.run_line_magic(magic_name="run", line=abspath+"/DBUtils.py")
     c = readFile(abspath+"/ajax.html")
-    display.display(HTML(c))
+    display(HTML(c))
     #print(c)
