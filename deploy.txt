@@ -1,0 +1,18 @@
+Packaging
+=========
+[ ]
+python setup.py sdist
+python setup.py bdist_wheel --universal
+
+Set up for Uploading
+====================
+ Create ~/.pypirc with Following Contents
+[pypi]
+username = sada
+password = Password- Asdf
+
+Uploading
+=========
+twine upload dist/*
+
+

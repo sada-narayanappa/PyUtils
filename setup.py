@@ -20,7 +20,7 @@ setup(name='Jupytils',
             
           # Indicate who your project is intended for
           'Intended Audience :: Developers',
-          'Topic :: Jupyter Prettification :: Utilities ',
+          #'Topic :: Jupyter Prettification :: Utilities ',
       
           # Pick your license as you wish (should match "license" above)
            'License :: OSI Approved :: MIT License',

@@ -32,6 +32,15 @@ def readFile(file):
         c = f.read().decode().replace('\r\n', '\n')
         return c;
 
+def jlog(*args, debug=False, **kwargs):
+    if (not debug or 'debug' in kwargs and not kwargs(debug) ):
+        return;
+
+    for a in args:
+        print(a, end=' ')
+    for k,v in kwargs.items():
+        print ("%s = %s" % (k, v))
+
 def LoadJupytils(abspath=None, debug=False):
     
     ip = get_ipython()

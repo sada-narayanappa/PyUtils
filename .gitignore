@@ -7,3 +7,6 @@ PyUtils
 *temp*
 .DS*
 __*
+Jupytils.egg*
+build/*
+dist/*
