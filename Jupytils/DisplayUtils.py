@@ -803,13 +803,13 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
         
             
         if(showNav):
-            if(tableID is None or len(dfs) > 1):
-                dttm = str(int(datetime.datetime.now().timestamp()*1000) )
-                tableID = "tableID_" + dttm 
+            dttm = str(int(datetime.datetime.now().timestamp()*1000) )
+            tableID = "tableID_" + dttm 
                 
-                h = h.replace("<table ", "<table id='{}' ".format(tableID) )
+            h = h.replace("<table ", "<table id='{}' ".format(tableID) )
 
-            inspect.stack()[1][0].f_globals['DFF_PY_VAR_'+tableID] = nd
+            dfVarNme = 'DFF_PY_VAR_'+tableID;
+            inspect.stack()[1][0].f_globals[dfVarNme] = nd
 
             op = '''<div id='tab_<TABLE_ID>' style='ddisplay:none;width:100%' >
             {}
@@ -824,7 +824,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
     
         
         tabSep = "<td>&nbsp;</td>" if len(dfs) > 1 else "";
-        otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + dim + "<br>\n" + h + "</td>{}".format(tabSep)
+        otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + dim + " var: " + dfVarNme + "<br>\n" + h + "</td>{}".format(tabSep)
     otr += "</tr></table>"
     if (not donotDisplay):
         display(HTML(otr))
@@ -832,6 +832,4 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
     if (showNav):
         otr = otr +  navigation_buttons_common;
     return otr
-
-
 
