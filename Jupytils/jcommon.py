@@ -32,7 +32,7 @@ def readFile(file):
         c = f.read().decode().replace('\r\n', '\n')
         return c;
 
-def LoadJupytils(abspath=None, debug=True):
+def LoadJupytils(abspath=None, debug=False):
     
     ip = get_ipython()
     if(abspath is None):
