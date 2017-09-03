@@ -498,7 +498,7 @@ def getDesc(df, idx):
 
 
 def getIcons(df,h):
-    h1="<tr><td align=center></td >";
+    h1="<tr><td style='text-align: ceter;'></td >";
     idx=0;
     for i, c in enumerate(df.columns):
         fig = None 
