@@ -9,6 +9,10 @@ import dateutil;
 import json;
 import urllib.request;
 import re
+import base64
+from pandas import ExcelFile
+from io import StringIO, BytesIO
+
 
 import matplotlib
 #matplotlib.style.use('ggplot')
@@ -81,9 +85,17 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     return df1;
 
     
-def LoadDataSet(fileOrString, columns=None, 
+def LoadDataSet(fileOrString, columns=None, excel = False,
                 debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None,
                 index_col=None,sheetname=0, **kwargs):
+    
+    if(type(fileOrString) == bytes and excel ):
+        d= base64.decodestring(fileOrString);
+        ex = ExcelFile(BytesIO(d) );
+        df = ex.parse(ex.sheet_names[-1])
+        df = df.fillna('');
+        return df;
+        
     if (fileOrString.find("\n") >=0 ):
         ps = [line.strip() for line in fileOrString.split('\n')
                 if line.strip() != '' and not line.startswith("#") ];
