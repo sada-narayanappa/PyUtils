@@ -513,18 +513,17 @@ def getIcons(df,h):
             #fig = "/files/" + fig;
             desc = getDesc(df, idx);
             h1 = h1 + '''
-<td><a class='thumbnail' href='#thumb'>
+<td align=center>{}<br/><a class='thumbnail' href='#thumb'>
 <img src='{}' border=0 style='{{margins: 0;}}' width=64 height=64 /> 
 <span><img src='{}' /><br />
 {} {}
-</span></a>'''.format(fig, fig, '', desc); #getDesc(df,idx);
+</span></a></td>'''.format(str(df.dtypes[i]),fig, fig, '', desc); #getDesc(df,idx);
 
             #h1 = h1 + "<td><a class='thumbnail' href='#thumb'><img src='" + fig;
             #h1 = h1 + "' border=0 style='{margins: 0;}' width=64 height=64 ";
             #h1 = h1 + "/> <span><img src='"+ fig + "' /><br /></span></a>";
-#            h1 = h1 +"onmouseover='this.width=500;' onmouseout='this.width=64' >" 
-                        
-            h1 = h1 + "<br/>" + str(df.dtypes[i]) + "</td>";  
+            #h1 = h1 +"onmouseover='this.width=500;' onmouseout='this.width=64' >" 
+            #h1 = h1 + "</td>";  
             
         idx=idx + 1;          
     h1 = h1 + "</tr>\n";
@@ -592,7 +591,7 @@ def UpdateDataFrameFromHTML(html, dff=None):
     nRows = len(rows)
     nCols = int(len(vals)/nRows)
     
-    #print ("===> Reshaping", nRows, nCols);
+    #console.log ("===> Reshaping", nRows, nCols);
     vals = np.array(vals).reshape(nRows, nCols)
 
     #print( vals, len(vals), nCols, nRows)
@@ -612,7 +611,8 @@ def UpdateDataFrameFromHTML(html, dff=None):
     for i, r in dft.iterrows():
         dff.loc[i:i,:] = dft.loc[i:i,:]
 
-navigation_buttons_common = '''
+navigation_buttons_common = '';
+navigation_buttons_common1= '''
 <script>
 jQuery.fn.reverse = [].reverse;
 
