@@ -9,6 +9,10 @@ I only support Python 3.x - Do not use in 2.x versions. Please support Python 3.
 
 ( ) Use the following in your Notebook as first line
 
-import Jupytils
+import sys
 import importlib as imp
-reloaded = imp.reload(Jupytils)
+if ('Jupytils' in sys.modules):
+    reloaded = imp.reload(Jupytils)
+else:
+    import Jupytils
+
