@@ -3,8 +3,8 @@ recursive-include Jupytils imgs
 recursive-exclude __pycache__
 recursive-exclude *.pyc
 recursive-exclude *.pyo
-recursive-exclude *.orig`
+recursive-exclude *.orig
 recursive-exclude * __pycache__
 recursive-exclude * *.pyc
 recursive-exclude * *.pyo
-recursive-exclude * *.orig`
+recursive-exclude * *.orig

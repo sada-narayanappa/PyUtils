@@ -559,8 +559,44 @@ def getHTMLTableRows(dff, startRow=0, maxRows = 5):
         ddd=dff[startRow:e]
 
     vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
-    idxs = [""] + (list(ddd.index) )
+    
+    if (dff.index.dtype_str.startswith('datetime')):
+        idxs = list(ddd.index.astype(str))
+    else:
+        idxs = [""] + (list(ddd.index) )
+    
+    #ret = '''"vals": {}; "idxs": {}'''.format(json.dumps(vals), json.dumps(idxs))
+    ret = '''{{"vals": {}, "idxs": {}}}'''.format(json.dumps(vals), (idxs) )
+    
+    ret = ret.replace("'", '"')
+    
+    return ret
 
+def getHTMLTableRowsFromIndex(dff, idx=0, dispRows = 5, goBack=True):
+    
+    if (dff.index.is_numeric()):
+        startRow = dff.index.get_loc(int(idx) )
+    else:
+        startRow = dff.index.get_loc(idx )
+
+    if (goBack):
+        topRow = startRow - dispRows;
+        startRow = startRow - 2*dispRows +2
+        if ( topRow < 0):
+            return""; #Already showing top row
+    else:
+        if ( startRow >= len(dff)-1):
+            return ""; # already showing last Row
+    startRow = max(startRow,0)
+    e = startRow + dispRows
+    ddd=dff[startRow:e]
+
+    vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+    
+    if (dff.index.dtype_str.startswith('datetime')):
+        idxs = list(ddd.index.astype(str))
+    else:
+        idxs = [""] + (list(ddd.index) )
     
     #ret = '''"vals": {}; "idxs": {}'''.format(json.dumps(vals), json.dumps(idxs))
     ret = '''{{"vals": {}, "idxs": {}}}'''.format(json.dumps(vals), (idxs) )
@@ -579,6 +615,30 @@ def getHTMLTableRowsFromSearch(dff, searchString=None, maxRows=10):
     if(len(ddd) <= 0 ):
         return ''    
     return ddd.to_html()
+
+
+def UpdateDataFrame(dff, row, col, val):
+    if(len(dff) < 0):
+        return '';
+    
+    col = int(col)
+    try:
+        newVal = pd.Series(val).astype(dff.dtypes[col])[0]
+        oldVal = val
+        
+        if (dff.index.is_numeric()):
+            oldVal = dff.ix[int(row), col]
+            dff.ix[int(row), col] = newVal
+        else:
+            oldVal = dff.ix[row, col]
+            dff.ix[row, col] = newVal
+
+        if (oldVal != newVal):
+            print("old: {} , new: {}".format( oldVal, val))
+    except:
+        pass;
+    
+    return [oldVal, newVal]
 
 
 def UpdateDataFrameFromHTML(html, dff=None):
@@ -611,143 +671,25 @@ def UpdateDataFrameFromHTML(html, dff=None):
     for i, r in dft.iterrows():
         dff.loc[i:i,:] = dft.loc[i:i,:]
 
-navigation_buttons_common = '';
-navigation_buttons_common1= '''
-<script>
-jQuery.fn.reverse = [].reverse;
-
-function UpdateTableShowRows( tab_maxRows, tab_maxDisp, tableID, out) {
-    if(out.length <=10)
-        return
-        
-    o = JSON.parse(out.slice(1, -1))
-    // console.log("==>" + out );
-    // console.log("==>VALS\\n " + o.vals );
-    // console.log("==>IDXX " + o.idxs + " ++" + tableID);
-
-    if (o.idxs.length <=0)
-        return;
-
-    var i=0;
-    trs = '{0} tr'.format(tableID)
-    $(trs).find('th:first').each(function ()
-    {
-        $(this).text( o.idxs[i++]);
-    });
-    i=o.vals.length-1;
-    tds = '{0} td'.format(tableID)
-    $(tds).reverse().each(function ()
-    {
-        $(this).text(o.vals[i--]);
-    });
-    
-}
-
-function TableShowRows( gg, tab_maxRows, tab_maxDisp, tableID, dataframeName ) {
-    g = Number.parseInt(gg)
-    if (isNaN(g) ){
-        alert("hmmmm value: "+ gg + " make no sense" )
-        return '';
-    }
-    var kernel = Jupyter.notebook.kernel;    
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g, tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
-    gu.callPython( command, cb) ;
-//    console.log("Executing Command: " + command );
-}
-
-function PrevPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
-    last = $(tableID).find('th:last').text()
-
-    g = Number.parseInt(last)
-    
-    if (isNaN(g) ){
-        alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
-        return '';
-    }
-    
-    topRow=g-tab_maxDisp
-    if(topRow < 0){
-        return;
-    }
-    startRow = g - 2*tab_maxDisp +2
-    
-    
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, startRow, tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
-    gu.callPython( command, cb) ;
-//    console.log("Executing Command: " + command );
-
-}
-function NextPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
-    last = $(tableID).find('th:last').text()
-
-    g = Number.parseInt(last)
-    if (isNaN(g) ){
-        alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
-        return '';
-    }
-    if(g >= tab_maxRows-1){
-        return
-    }
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g , tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
-    gu.callPython( command, cb) ;
-//    console.log("Executing Command: " + command );
-}
-
-function SaveDataFrameFromHTML(tableID, dataFrameVariable){
-    ret = $(tableID).html()
-    s = ret.indexOf('</thead>')
-    if ( s< 0 ) return;
-    s1 = ret.substr(s+10)
-    ret = s1.replace(/\\n/g, '');
-    //console.log(s, ret)
-    cmd = "UpdateDataFrameFromHTML(r\'\'\'{0}\'\'\', {1})".format(ret,dataFrameVariable);
-    gu.callPython(cmd)
-}
-
-function ShowSearchResults(resultsDIV, html){
-    //console.log("===>GOT:" + html)
-    html = html.trim()
-    if ( html.startsWith("'") && html.endsWith("'") ){
-        html = html.slice(1, -1);
-    }
-    $(resultsDIV).html("Search Results:<br/>" + html)
-}
-function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
-    v1 = tableID +'_search'
-    v2 = tableID +'_searchResults'
-    
-    
-    s = $(v1).val()
-    if (s.length <=0) {
-        $(v2).html('')
-        $(v2).css('')
-        return
-    }
-    cb  = ShowSearchResults.bind(null, v2);
-    cmd = "getHTMLTableRowsFromSearch({0}, searchString='{1}', maxRows={2})".format(dataFrameVariable,s, tab_maxDisp);
-    //console.log(cmd)
-    gu.callPython(cmd, cb)
-}
-</script>
-'''
-
 navigation_buttons = '''
 <div style="display:block;height:20px">
-<input type=button value='GO>>' onclick="TableShowRows( $('#<TABLE_ID>_goto').val(), NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
-<input id='<TABLE_ID>_goto' type=text value='9'  size=4 >
-<input type=button value=' << ' onclick="PrevPage( NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
-<input type=button value=' >> ' onclick="NextPage( NUMROWS, MAXDISP, '#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>' );">
+
+<input id='<TABLE_ID>_goto' type=text value=''  size=4 
+onkeyup = "if (event.keyCode == 13) TableShowRows( $(this).val(), MAXDISP, '#<TABLE_ID>')">
+
+<input type=button value='<<' onclick="Page( 1, MAXDISP, '#<TABLE_ID>' );">
+<input type=button value='>>' onclick="Page( 0, MAXDISP, '#<TABLE_ID>' );">
 
 <input type=button value='Save' onclick="SaveDataFrameFromHTML('#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>');">
-<input type=button value='Search >>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
+<input type=button value='Search>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
 <input id='<TABLE_ID>_search' type=text value=''" size=10>
 </div>
+<script>
+AddFocus('#<TABLE_ID>', MAXDISP);
+</script>
 ''';
 
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, tableID=None, showNav= True,
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, tableID=None, showNav= True,
                search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
@@ -799,8 +741,10 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
         if (shIcons and nd.shape[0] > 0):
             h = getIcons(nd,h);
         if (showStats and nd.shape[0] > 0):
-            h = addDescribe(nd,h);
-        
+            pass; #h = addDescribe(nd,h);
+            #NOt doing this anymore - too ugly
+       
+    
             
         if(showNav):
             dttm = str(int(datetime.datetime.now().timestamp()*1000) )
@@ -829,7 +773,5 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = True, showIcons=True, t
     if (not donotDisplay):
         display(HTML(otr))
         
-    if (showNav):
-        otr = otr +  navigation_buttons_common;
     return otr
 

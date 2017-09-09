@@ -35,7 +35,7 @@ gu.inNotebook = function() {
     var kernel;
     try{
         kernel = Jupyter.notebook.kernel;
-        return true
+        return kernel
     }catch(Exception) {
     }
     return false
@@ -187,11 +187,19 @@ gu.callPython($('#pycode').val(), gu.cleanPyOut);
 <script>
 jQuery.fn.reverse = [].reverse;
 
-function UpdateTableShowRows( tab_maxRows, tab_maxDisp, tableID, out) {
+function UpdateTableShowRows( tab_maxDisp, tableID, out) {
     if(out.length <=10)
         return
         
     o1 = out.slice(1, -1)
+    if (o1.startsWith("'") || o1.startsWith('"') )
+        o1 = out.slice(1, -1)
+    
+    if (o1.startsWith ("error")){
+        console.log("==>Kernel Error:" + o1 );
+        return;
+    }
+    
     if ( o1.indexOf('\\\\"') >= 0) {
         o1 = o1.replace(/\\\\/g,'\\');
     }
@@ -207,69 +215,55 @@ function UpdateTableShowRows( tab_maxRows, tab_maxDisp, tableID, out) {
         return;
 
     var i=0;
-    trs = '{0} tr'.format(tableID)
-    $(trs).find('th:first').each(function ()
+    trs = '{0} th'.format(tableID)
+    //$(trs).find('th:first').each(function ()
+    //{
+    //    $(this).text( o.idxs[i++]);
+    //});
+    var i=o.idxs.length-1;
+    $(trs).reverse().each(function ()
     {
-        $(this).text( o.idxs[i++]);
+        if (i >=0)
+            $(this).text( o.idxs[i--]);
+        else
+            return;
     });
+    
     i=o.vals.length-1;
     tds = '{0} td'.format(tableID)
     $(tds).reverse().each(function ()
     {
-        $(this).text(o.vals[i--]);
+        if (i >=0)
+            $(this).text(o.vals[i--]);
+        else
+            return;
     });
-    
 }
+    
+function TableShowRows( gg, tab_maxDisp, tableID) {
+    if (gg.length <=0 )
+        return
+        
+    dfName = "DFF_PY_VAR_" + tableID.substr(1);
 
-function TableShowRows( gg, tab_maxRows, tab_maxDisp, tableID, dataframeName ) {
     g = Number.parseInt(gg)
     if (isNaN(g) ){
-        alert("hmmmm value: "+ gg + " make no sense" )
+        console.log("hmmmm value: "+ gg + " make no sense" )
         return '';
     }
-    var kernel = Jupyter.notebook.kernel;    
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g, tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
+    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dfName, g, tab_maxDisp )
+    cb = UpdateTableShowRows.bind(null, tab_maxDisp, tableID)
     gu.callPython( command, cb) ;
 //    console.log("Executing Command: " + command );
 }
 
-function PrevPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
+function Page(back, dispRows, tableID){
     last = $(tableID).find('th:last').text()
-
-    g = Number.parseInt(last)
     
-    if (isNaN(g) ){
-        alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
-        return '';
-    }
+    dfName = "DFF_PY_VAR_" + tableID.substr(1);
     
-    topRow=g-tab_maxDisp
-    if(topRow < 0){
-        return;
-    }
-    startRow = g - 2*tab_maxDisp +2
-    
-    
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, startRow, tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
-    gu.callPython( command, cb) ;
-//    console.log("Executing Command: " + command );
-
-}
-function NextPage(tab_maxRows, tab_maxDisp, tableID, dataframeName ){
-    last = $(tableID).find('th:last').text()
-
-    g = Number.parseInt(last)
-    if (isNaN(g) ){
-        alert("hmmmm value: "+ last + " is not Integer - Cannot Navigate!!" )
-        return '';
-    }
-    if(g >= tab_maxRows-1){
-        return
-    }
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dataframeName, g , tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxRows, tab_maxDisp, tableID)
+    command = "getHTMLTableRowsFromIndex({0},idx='{1}',dispRows={2},goBack={3})".format(dfName, last, dispRows,back )
+    cb = UpdateTableShowRows.bind(null, dispRows, tableID)
     gu.callPython( command, cb) ;
 //    console.log("Executing Command: " + command );
 }
@@ -308,6 +302,39 @@ function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
     cmd = "getHTMLTableRowsFromSearch({0}, searchString='{1}', maxRows={2})".format(dataFrameVariable,s, tab_maxDisp);
     //console.log(cmd)
     gu.callPython(cmd, cb)
+}
+    
+function AddFocus(tableID, dispRows) {
+    var cols = $(tableID).find('td:last').index()
+    
+    i = dispRows * cols
+    
+    console.log( i);
+    tdss = $(tableID).find('td')
+    $(tdss).reverse().each(function () {
+        if (i < 0)
+            return;
+        i--;
+        $(this).focusout( function() {
+            var ct = $(this).text()
+            var ot = $(this).data("original")
+            var ri = $(this).closest('tr').find('th').text();
+            var ci = $(this).index()-1;
+            
+            if ( ct != ot ) {
+                console.log( "row {0}, col {1}, old: {3} New: {4}".format(ri, ci, ot,ct ) );
+                t = 'DFF_PY_VAR_'+tableID.substr(1)
+                command = "UpdateDataFrame({0},'{1}', {2}, '{3}')".format(t, ri,ci,ct)
+                //console.log(command)
+                gu.callPython( command )
+            }
+        }); 
+        $(this).focusin (function(){
+            var ct  = $(this).text()
+            $(this).data("original", ct)
+            console.log(ct)
+        });
+    });
 }
 </script>
 
