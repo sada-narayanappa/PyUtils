@@ -5,7 +5,7 @@ no-git
 LMCO/data
 *temp*
 .DS*
-__*
+__p*
 Jupytils.egg*
 build/*
 dist/*
