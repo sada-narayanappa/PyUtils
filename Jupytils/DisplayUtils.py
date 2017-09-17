@@ -407,7 +407,7 @@ def searchDF(df, s="", cols=[], maxRows=10):
         for j, c in r.iteritems():
             if (len(cols) > 0 and not c in cols):
                 break;
-            if ( str(c).find(s) >= 0):
+            if ( re.match(s, str(c)) ):
                 maxRows = maxRows -1;
                 rows.append(i)
                 break;
@@ -682,7 +682,9 @@ onkeyup = "if (event.keyCode == 13) TableShowRows( $(this).val(), MAXDISP, '#<TA
 
 <input type=button value='Save' onclick="SaveDataFrameFromHTML('#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>');">
 <input type=button value='Search>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
-<input id='<TABLE_ID>_search' type=text value=''" size=10>
+<input id='<TABLE_ID>_search' type=text value=''" size=10
+    title="RE search support: ex: ^13$\\b to search for 13"
+    onkeyup = "if (event.keyCode == 13) SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
 </div>
 <script>
 AddFocus('#<TABLE_ID>', MAXDISP);

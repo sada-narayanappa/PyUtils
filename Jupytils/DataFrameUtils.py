@@ -12,6 +12,7 @@ import re
 import base64
 from pandas import ExcelFile
 from io import StringIO, BytesIO
+import xml.etree.ElementTree as ET
 
 
 import matplotlib
@@ -34,6 +35,74 @@ If so, Pass "headers=None" and pass names
 
 '''
 
+#Make this generic
+class Map(dict):
+    """
+    Example:
+    m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+    """
+    def __init__(self, *args, **kwargs):
+        super(Map, self).__init__(*args, **kwargs)
+        for arg in args:
+            if isinstance(arg, dict):
+                for k, v in arg.items():
+                    self[k] = v
+
+        if kwargs:
+            for k, v in kwargs.iteritems():
+                self[k] = v
+
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    def __setattr__(self, key, value):
+        self.__setitem__(key, value)
+
+    def __setitem__(self, key, value):
+        super(Map, self).__setitem__(key, value)
+        self.__dict__.update({key: value})
+
+    def __delattr__(self, item):
+        self.__delitem__(item)
+
+    def __delitem__(self, key):
+        super(Map, self).__delitem__(key)
+        del self.__dict__[key]
+        
+# LIMITATIONS: Works only if all nodes have same tags
+# 1M rows must be good enough
+#
+def getDFFromXML(file, xmlTag=None, maxRows=1000000):
+    with open(file, "r") as f:
+        xmlText = f.read()
+
+    root = ET.fromstring(xmlText)
+    
+    if (xmlTag):
+        iters= root.findall(path=xmlTag)
+    else:
+        iters = root;
+    
+    cols=[]
+    for i,e in enumerate(iters):
+        for j,e1 in enumerate(e):
+            cols.append(e1.tag)
+        break;
+    
+    rr=[]
+    for i,e in enumerate(iters):
+        r = []
+        for j,e1 in enumerate(e):
+             r.append(e1.text)
+        rr.append(r)    
+        if (i>maxRows):
+            break;
+
+    df=pd.DataFrame(rr)
+    df.columns = cols
+    
+    return df;
+
 def DetermineSeperator(line):
     sep = ","    
     split2  = line.split("\t");
@@ -55,39 +124,43 @@ def getAuraDF(link):
     else:
         return js
         
-def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, seperator=None, index_col=None, sheetname=0):
+def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, 
+          seperator=None, index_col=None, sheetname=0, xmlTag=None):
+    
     if (    not (fileName.startswith("http://"))  and
             not (fileName.startswith("https://")) and
             not os.path.exists(fileName)):
         #raise Exception( fileName + " does not exist")
         print ("ERROR: *** " +fileName + " does not exist");
         return None;
+    
     sep = seperator or ",";
     df1=None
     if (fileName.startswith("http")):
         df1 = getAuraDF(fileName)
+    elif fileName.endswith(".xlsx") or fileName.endswith(".xlsm"): 
+        df1 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
+    elif (fileName.endswith(".xml")):
+        df1 = getDFFromXML(fileName, xmlTag)
+    elif ("/aura/" in fileName):
+        df1 = getAuraDF(fileName);
+        return df1
     else:
-        if fileName.endswith(".xlsx") or fileName.endswith(".xlsm"): 
-            df1 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
-        elif ("/aura/" in fileName):
-            df1 = getAuraDF(fileName);
-            return df1
-        else:
-            sep = ","
-            if not fileName.endswith(".csv"):
-                with open(fileName, 'r') as f:
-                    line    = f.readline();    
-                    #split1  = line.split(",");
-                    sep = DetermineSeperator(line);
+        sep = ","
+        if not fileName.endswith(".csv"):
+            with open(fileName, 'r') as f:
+                line    = f.readline();    
+                #split1  = line.split(",");
+                sep = DetermineSeperator(line);
                 
-            df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
-                          skipinitialspace =True, names=names, comment='#', usecols=usecols)
+        df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
+                       skipinitialspace =True, names=names, comment='#', usecols=usecols)
     return df1;
 
     
 def LoadDataSet(fileOrString, columns=None, excel = False,
                 debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None,
-                index_col=None,sheetname=0, **kwargs):
+                index_col=None,sheetname=0, xmlTag=None, **kwargs):
     
     if(type(fileOrString) == bytes and excel ):
         d= base64.decodestring(fileOrString);
@@ -107,7 +180,7 @@ def LoadDataSet(fileOrString, columns=None, excel = False,
         df1 = pd.DataFrame(ns[1:], columns=ns[0], **kwargs);
     else:               
         df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, 
-                    usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname)     
+                    usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname, xmlTag=xmlTag)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
