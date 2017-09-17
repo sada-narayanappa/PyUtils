@@ -27,6 +27,16 @@ from IPython import get_ipython
 import os
 import Jupytils
 
+from datetime import timedelta;
+from random import randint
+from collections import defaultdict
+%matplotlib inline
+from pylab import rcParams
+rcParams['figure.figsize'] = 3, 3
+import os;
+import datetime
+import re
+
 def readFile(file):
     with open(file, "rb") as f:
         c = f.read().decode().replace('\r\n', '\n')
