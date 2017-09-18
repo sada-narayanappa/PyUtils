@@ -30,7 +30,6 @@ import Jupytils
 from datetime import timedelta;
 from random import randint
 from collections import defaultdict
-%matplotlib inline
 from pylab import rcParams
 rcParams['figure.figsize'] = 3, 3
 import os;
