@@ -688,6 +688,8 @@ onkeyup = "if (event.keyCode == 13) TableShowRows( $(this).val(), MAXDISP, '#<TA
 </div>
 <script>
 AddFocus('#<TABLE_ID>', MAXDISP);
+$("#<TABLE_ID> th").resizable()
+
 </script>
 ''';
 
@@ -751,7 +753,8 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, 
         if(showNav):
             dttm = str(int(datetime.datetime.now().timestamp()*1000) )
             tableID = "tableID_" + dttm 
-                
+            nd.tableID = tableID
+            
             h = h.replace("<table ", "<table id='{}' ".format(tableID) )
 
             dfVarNme = 'DFF_PY_VAR_'+tableID;
@@ -763,6 +766,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, 
             </div>'''.format(h + navigation_buttons)
             op = op.replace("<TABLE_ID>", tableID).replace('NUMROWS', str(len(nd))).replace('MAXDISP', str(maxrows) )
             h = op
+            
         else:
             if(tableID):
                 h = h.replace("<table ", "<table id='{}' ".format(tableID) )
