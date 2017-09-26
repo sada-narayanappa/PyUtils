@@ -10,7 +10,7 @@ setup(name='Jupytils',
       packages = ['Jupytils'],
       package_data={'Jupytils':['*', 'imgs/*']},
       zip_safe=False,
-      install_requires=['matplotlib', openpyxl],
+      install_requires=['matplotlib', 'openpyxl'],
       classifiers=[
           # How mature is this project? Common values are
           #   3 - Alpha
