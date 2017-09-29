@@ -1,28 +1,15 @@
 #!/usr/local/bin/python
-
 #--------------------------------------------------------------------------
 # To run type flask_ws <port: default: 8500) 
-# http://localhost:8500/ws?k&t=sada&j=sdss
-#       
+# How to Run
 from flask import Flask
 from flask import request
 from flask import Response
-# from flask_restful import Resource, Api
-# from json import dumps
 import sys, os, importlib, inspect
-# import cgi
-from HDBUtils import HDB
+from Jupytils.DBUtils import DBUtils
 import traceback
 
-CWD=os.getcwd()
-ABS_PATH = os.path.abspath(CWD)
-sys.path.append(ABS_PATH)
-
 app = Flask(__name__)
-#--------------------------------------------------------------------------
-SQL_TXT = "./SQL.txt";
-db = HDB(conn='postgresql://postgres:postgres@localhost:5400/SCHASDB');
-db.load(file=SQL_TXT);
 #--------------------------------------------------------------------------
 @app.route('/ds/echo', methods=['POST', 'GET', 'OPTIONS', 'HEAD'])
 def echo():
@@ -40,7 +27,7 @@ def q(type = 'html', qid=''):
         q1 = qid;
 
     try: 
-        q2, tags = HDB.prepare(q1, request.args);
+        q2, tags = DBUtils.prepare(q1, request.args);
         if (type not in ['html', 'text', 'json', 'csv'] ):
             type = 'html';
 
@@ -79,13 +66,21 @@ Available URLS are: /ds/dump, /ds/q , /ds/echo
 #--------------------------------------------------------------------------
 '''
 Help:
-flask_ws port
+flask_ws port connection 
 '''
-def start():
+def start(sqlText=None, conn=None):
+    global db
+    db = DBUtils(conn = conn);
+    db.load(file=sqlText);
+    
     port = 8500 if len(sys.argv) < 2 else int(sys.argv[1])
     print( "Starting at port: ", port)
     app.run(debug=True, host="0.0.0.0", port=port)
 
+#--------------------------------------------------------------------------
 if __name__ == '__main__':
-    start();
+    SQL_TXT = "SQL.txt";
+    conn='postgresql://postgres:postgres@localhost:5400/SCHASDB'
+
+    start(SQL_TXT, conn, );
 
