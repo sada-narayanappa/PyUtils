@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='Jupytils',
-      version='0.239',
+      version='0.240',
       description='Productive Simple Intuitive Jupyter Python Utilities',
       url='https://github.com/sada-narayanappa/PyUtils.git',
       author='Code Red',
@@ -10,7 +10,7 @@ setup(name='Jupytils',
       packages = ['Jupytils'],
       package_data={'Jupytils':['*', 'imgs/*']},
       zip_safe=False,
-      install_requires=['matplotlib'],
+      install_requires=['matplotlib', 'openpyxl'],
       classifiers=[
           # How mature is this project? Common values are
           #   3 - Alpha

@@ -123,7 +123,41 @@ def getAuraDF(link):
         return df
     else:
         return js
-        
+
+def getFormulas(ws, df2):
+    from collections import defaultdict
+    formulas= defaultdict(str);
+
+    rows = df2.shape[0]
+    cols = df2.shape[1]    
+    for i in range(rows):
+        for j in range(cols):
+            ii = i+1
+            jj = j+1
+                
+            c= ws.cell(row=ii, column=jj);
+            v = c.value;
+            
+            if ( v is not None and type(v) == str and v.strip().startswith('=') ):
+                formulas[(ii,jj)] = v
+    return formulas
+
+def getExcelFile(fileName, sheetname=0):
+    import openpyxl
+    df2 = pd.read_excel(fileName, header=None, sheetname=sheetname)
+    colNames = [openpyxl.utils.get_column_letter(c) for c in range(1,df2.shape[1]+1) ]
+    df2.columns = (colNames)
+
+    df2.fillna('', inplace=True)
+    df2.index = range(len(df2))
+    wb = openpyxl.load_workbook(fileName)
+    if ( type(sheetname) == int):
+        sheetname = wb.sheetnames[sheetname]
+    ws=wb[sheetname]
+    df2.formulas = getFormulas(ws, df2)
+    
+    return df2;
+    
 def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, 
           seperator=None, index_col=None, sheetname=0, xmlTag=None):
     
@@ -138,8 +172,8 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     df1=None
     if (fileName.startswith("http")):
         df1 = getAuraDF(fileName)
-    elif fileName.endswith(".xlsx") or fileName.endswith(".xlsm"): 
-        df1 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
+    elif fileName.endswith(".xlsx") or fileName.endswith(".xlsm") or fileName.endswith(".xlsb"): 
+        df1 = getExcelFile(fileName, sheetname)
     elif (fileName.endswith(".xml")):
         df1 = getDFFromXML(fileName, xmlTag)
     elif ("/aura/" in fileName):
