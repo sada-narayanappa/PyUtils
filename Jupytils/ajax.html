@@ -200,13 +200,18 @@ function UpdateTableShowRows( tab_maxDisp, tableID, out) {
         return;
     }
     
-    if ( o1.indexOf('\\\\"') >= 0) {
+    if ( o1.indexOf('\\\\') >= 0) {
+        o1 = o1.replace(/\\\\/g,'\\');
         o1 = o1.replace(/\\\\/g,'\\');
     }
+    o1 = o1.replace(/\n/g,'\\n');
     //console.log("==>" + o1 );
 
-    o = JSON.parse( o1 )
-
+    try{
+        o = JSON.parse( o1 )
+    } catch(e){
+        console.log(e, out )
+    }
     // console.log("==>" + out );
     // console.log("==>VALS\n " + o.vals );
     // console.log("==>IDXX " + o.idxs + " ++" + tableID);

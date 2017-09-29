@@ -8,22 +8,15 @@ import numpy as np
 import collections
 from collections import defaultdict
 import pandas as pd;
+import sys, os
+import datetime
 
-import _pickle as cPickle
-import pandas.io.sql as psql
 import sqlalchemy
 from sqlalchemy import Sequence, inspect, create_engine
 from sqlalchemy.engine import reflection
-from GenUtils import *;
-## ---------------------------------------------------Convenient funcs
-#insp.get_table_names()       # Get all tables
-#insp.get_columns('test')     # Get all Columns
-#insp.get_indexes('loc')      # Get secondary indexes
-#insp.get_pk_constraint('loc')# get Primary key
-#insp.get_foreign_keys('loc')
-#insp.get_schema_names()
-## ---------------------------------------------------
-    
+from DataFrameUtils import *;
+
+#----------------------------------------------------------------------
 class DBUtils:
     RE=[
         re.compile("(.*?)#--------*", re.M|re.DOTALL),
@@ -33,22 +26,27 @@ class DBUtils:
 #----------------------------------------------------------------------
     def __init__(self, conn = 'postgresql://postgres:postgres@localhost:5400/SCHASDB'):
         self.meta = sqlalchemy.MetaData()
-        self.engine = create_engine(conn)
+        try:
+            self.engine = create_engine(conn)
+            self.insp = reflection.Inspector.from_engine(self.engine)
+            self.QCACHE=Map(defaultdict(None))
+            self.error = None
+        except Exception as e: 
+            ret = "Exception: " + str(e)
+            print(ret);
+            self.error = ret 
         #self.meta.reflect(engine)  # <==== THIS TAKES LONG TIME - RUN IT ONLY ONCE
-        self.insp = reflection.Inspector.from_engine(self.engine)
-        self.QCACHE=DDict(defaultdict(None))
 #----------------------------------------------------------------------
     def execQ(self, q="SELECT * from test", limit=1000):
-        c = self.engine.connect()
-        df = None;
+        a = datetime.datetime.now()
         try:
-            res = self.engine.execute(q)
-            rc = res.rowcount
-            if ( res.returns_rows):
-                df = pd.DataFrame(res.fetchmany(limit))
-                df.columns = res.keys();
-            else:
-                df = "rows affected {}".format(rc)
+            c = self.engine.connect()
+            df = None;
+            df = pd.read_sql(q, c)
+            if (printTime):
+                b = datetime.datetime.now()
+                d = b - a
+                print(d)
         except Exception as e: 
             ret = "Exception: " + str(e)
             print(ret);
@@ -98,9 +96,9 @@ class DBUtils:
         for q in sorted(self.QCACHE.keys()):
             qu = (self.QCACHE[q])
             qt, tags = DBUtils.prepare(qu)
-            print ("[{} ==> {}]  [{}] ".format(qu, qt, tags) )
-        
-            
+            ret += ("[{}: {} ==> {}]  [{}] ".format(q, qu, qt, tags) )
+        print(ret)
+        return 
         
     def test():
         SQL='''

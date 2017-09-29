@@ -407,7 +407,7 @@ def searchDF(df, s="", cols=[], maxRows=10):
         for j, c in r.iteritems():
             if (len(cols) > 0 and not c in cols):
                 break;
-            if ( re.match(s, str(c)) ):
+            if ( re.match(s, str(c), flags=re.M|re.DOTALL|re.I) ):
                 maxRows = maxRows -1;
                 rows.append(i)
                 break;
@@ -559,6 +559,8 @@ def getHTMLTableRows(dff, startRow=0, maxRows = 5):
         ddd=dff[startRow:e]
 
     vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+    vals = [v.replace("'", '\\\'') for v in vals]
+    vals = [v.replace("\n", '\\n') for v in vals]
     
     if (dff.index.dtype_str.startswith('datetime')):
         idxs = list(ddd.index.astype(str))
@@ -592,7 +594,9 @@ def getHTMLTableRowsFromIndex(dff, idx=0, dispRows = 5, goBack=True):
     ddd=dff[startRow:e]
 
     vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
-    
+    vals = [v.replace("'", '\\\'') for v in vals]
+    vals = [v.replace("\n", '\\n') for v in vals]
+   
     if (dff.index.dtype_str.startswith('datetime')):
         idxs = list(ddd.index.astype(str))
     else:
