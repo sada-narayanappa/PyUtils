@@ -8,6 +8,7 @@ import numpy as np
 import collections
 from collections import defaultdict
 import pandas as pd;
+import datetime
 
 import _pickle as cPickle
 import pandas.io.sql as psql
@@ -33,10 +34,20 @@ class DBUtils:
 #----------------------------------------------------------------------
     def __init__(self, conn = 'postgresql://postgres:postgres@localhost:5400/SCHASDB'):
         self.meta = sqlalchemy.MetaData()
-        self.engine = create_engine(conn)
+        try:
+            self.engine = create_engine(conn)
+            self.insp = reflection.Inspector.from_engine(self.engine)
+            self.QCACHE=defaultdict(None)
+            self.error = None
+        except Exception as e: 
+            ret = "Exception: " + str(e)
+            print(ret);
+            self.error = ret 
         #self.meta.reflect(engine)  # <==== THIS TAKES LONG TIME - RUN IT ONLY ONCE
-        self.insp = reflection.Inspector.from_engine(self.engine)
-        self.QCACHE=DDict(defaultdict(None))
+#----------------------------------------------------------------------
+    def Connection(self):
+        c = self.engine.connect()
+        return c;
 #----------------------------------------------------------------------
     def execQ(self, q="SELECT * from test", limit=1000):
         c = self.engine.connect()

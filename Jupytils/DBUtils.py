@@ -35,10 +35,14 @@ class DBUtils:
             self.error = ret 
         #self.meta.reflect(engine)  # <==== THIS TAKES LONG TIME - RUN IT ONLY ONCE
 #----------------------------------------------------------------------
+    def Connect(self):
+        c = self.engine.connect()
+        return c;
+#----------------------------------------------------------------------
     def execQ(self, q="SELECT * from test", limit=1000, printTime=False):
         a = datetime.datetime.now()
         try:
-            c = self.engine.connect()
+            c = Connect()
             df = None;
             df = pd.read_sql(q, c)
             if (printTime):
