@@ -1,5 +1,0 @@
-#---------
-ex1
-
-SELECT * from test Limit 10
-#---------
