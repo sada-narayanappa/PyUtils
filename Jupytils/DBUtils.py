@@ -8,13 +8,11 @@ import numpy as np
 import collections
 from collections import defaultdict
 import pandas as pd;
-import sys, os
 import datetime
 
 import sqlalchemy
 from sqlalchemy import Sequence, inspect, create_engine
 from sqlalchemy.engine import reflection
-from DataFrameUtils import *;
 
 #----------------------------------------------------------------------
 class DBUtils:
@@ -29,7 +27,7 @@ class DBUtils:
         try:
             self.engine = create_engine(conn)
             self.insp = reflection.Inspector.from_engine(self.engine)
-            self.QCACHE=Map(defaultdict(None))
+            self.QCACHE=defaultdict(None)
             self.error = None
         except Exception as e: 
             ret = "Exception: " + str(e)
@@ -37,7 +35,7 @@ class DBUtils:
             self.error = ret 
         #self.meta.reflect(engine)  # <==== THIS TAKES LONG TIME - RUN IT ONLY ONCE
 #----------------------------------------------------------------------
-    def execQ(self, q="SELECT * from test", limit=1000):
+    def execQ(self, q="SELECT * from test", limit=1000, printTime=False):
         a = datetime.datetime.now()
         try:
             c = self.engine.connect()
