@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='Jupytils',
-      version='0.241',
+      version='0.242',
       description='Productive Simple Intuitive Jupyter Python Utilities',
       url='https://github.com/sada-narayanappa/PyUtils.git',
       author='Code Red',
