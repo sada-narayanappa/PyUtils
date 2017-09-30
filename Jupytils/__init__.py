@@ -22,5 +22,8 @@ for m in sys.modules:
 
 #print("Modules loaded: ", dels)
 
-from Jupytils.jcommon import *
-LoadJupytils()
+try:
+	from Jupytils.jcommon import *
+	LoadJupytils()
+except:
+	pass

@@ -1,11 +1,9 @@
 #!/usr/local/bin/python
-
 from flask import Flask
 from flask import request
 from flask import Response
 import traceback, sys, datetime
-#from Jupytils.DBUtils import DBUtils
-from DBUtils import *
+from Jupytils.DBUtils import DBUtils
 
 app = Flask(__name__)
 #----------------------------------------------------------------------
@@ -72,7 +70,12 @@ class FlaskSQLWS:
 
 #--------------------------------------------------------------------------
 if __name__ == '__main__':
-    f = FlaskSQLWS()
+    import os.path;
+    if not os.path.exists('SQL.txt'):
+        with open("SQL.txt", "w") as f:
+            f.write("#---------\nex1\n\nSELECT * from test Limit 10\n#---------")
+
     s = "SQL.txt";
     conn = 'postgresql://postgres:postgres@localhost/SCHASDB'
+    f = FlaskSQLWS()
     f.start(sqlText=s, conn=conn,)
