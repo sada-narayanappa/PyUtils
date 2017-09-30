@@ -67,7 +67,6 @@ class FlaskSQLWS:
 
         print( "Starting at port: ", port)
         app.run(debug=True, host="0.0.0.0", port=port)
-
 #--------------------------------------------------------------------------
 if __name__ == '__main__':
     import os.path;
@@ -78,4 +77,4 @@ if __name__ == '__main__':
     s = "SQL.txt";
     conn = 'postgresql://postgres:postgres@localhost/SCHASDB'
     f = FlaskSQLWS()
-    f.start(sqlText=s, conn=conn,)
+    f.start(sqlText=s, conn=conn)
