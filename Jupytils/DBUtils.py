@@ -42,7 +42,7 @@ class DBUtils:
     def execQ(self, q="SELECT * from test", limit=1000, printTime=False):
         a = datetime.datetime.now()
         try:
-            c = Connect()
+            c = self.Connect()
             df = None;
             df = pd.read_sql(q, c)
             if (printTime):
