@@ -401,13 +401,13 @@ def plthist(x, y=None, bins='auto', alpha=0.75, title=None, grid = True, xlabel=
 Print analysis on the Pandas dataframe
 =======================================================================================
 '''
-def searchDF(df, s="", cols=[], maxRows=10):
+def searchDFInColumns(df, s="", cols=[], maxRows=10):
     rows=[]    
     for i, r in df.iterrows():
         for j, c in r.iteritems():
             if (len(cols) > 0 and not c in cols):
                 break;
-            if ( re.match(s, str(c), flags=re.M|re.DOTALL|re.I) ):
+            if ( re.search(s, str(c), flags=re.M|re.DOTALL|re.I) ):
                 maxRows = maxRows -1;
                 rows.append(i)
                 break;
@@ -415,7 +415,19 @@ def searchDF(df, s="", cols=[], maxRows=10):
             break
     df1 = df.iloc[rows];
     return df1;
-    
+
+def searchDF(df, s="", maxRows=10):
+    rows=[]    
+    for i, r in df.iterrows():
+        for c in r.values:
+            if re.search(s,str(c), flags=re.M|re.DOTALL|re.I):
+                maxRows = maxRows -1;
+                rows.append(i)
+                break;
+        if (maxRows ==0 or i > 50):
+            break
+    df1 = df.iloc[rows];
+    return df1;
 
 def colTypesDF(df):
     dfTypes=pd.DataFrame(df.dtypes)
@@ -697,8 +709,10 @@ $("#<TABLE_ID> th").resizable()
 </script>
 ''';
 
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, tableID=None, showNav= True,
-               search=None, cols=[],  showStats = False, editable=True, useMyStyle=True, donotDisplay=False ):
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, tableID=None, 
+               showNav= True, title=None,
+               search=None, cols=[],  showStats = False, editable=True, useMyStyle=True,
+               donotDisplay=False ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
@@ -778,7 +792,9 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, 
     
         
         tabSep = "<td>&nbsp;</td>" if len(dfs) > 1 else "";
-        otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + dim + " var: " + dfVarNme + "<br>\n" + h + "</td>{}".format(tabSep)
+        tit = title[i] if (type(title) == list) else title;
+        tit = tit + " " + dim if (tit is not None) else dim
+        otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + tit + " var: " + dfVarNme + "<br>\n" + h + "</td>{}".format(tabSep)
     otr += "</tr></table>"
     if (not donotDisplay):
         display(HTML(otr))

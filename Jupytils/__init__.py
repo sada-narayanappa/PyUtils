@@ -1,5 +1,3 @@
-#
-#
 Jupytils_debug=0;
 
 def log(*args, debug=False, end=' ', **kwargs):
@@ -23,7 +21,7 @@ for m in sys.modules:
 #print("Modules loaded: ", dels)
 
 try:
-	from Jupytils.jcommon import *
-	LoadJupytils()
+    from Jupytils.jcommon import *
+    LoadJupytils()
 except:
-	pass
+    pass

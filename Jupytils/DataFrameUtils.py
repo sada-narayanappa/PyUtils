@@ -13,7 +13,7 @@ import base64
 from pandas import ExcelFile
 from io import StringIO, BytesIO
 import xml.etree.ElementTree as ET
-
+import json, requests
 
 import matplotlib
 #matplotlib.style.use('ggplot')
@@ -110,9 +110,11 @@ def DetermineSeperator(line):
         sep = "\t";   
     return sep;
     
-def getAuraDF(link):
-    f = urllib.request.urlopen(link)
-    js = f.read().decode('UTF-8')
+def getAuraDF(link, proxies=None):
+    #f = urllib.request.urlopen(link)
+    #js = f.read().decode('UTF-8')
+    f = requests.get(link, verify= False, proxies=proxies)
+    js = f.text;
     fjs=re.sub('[\n\r|\r\n|\n\s*]+', '\n', js)
     js=re.sub('^\n', '', fjs)
     if (js.find("$rs=") > 0):
@@ -159,7 +161,7 @@ def getExcelFile(fileName, sheetname=0):
     return df2;
     
 def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, 
-          seperator=None, index_col=None, sheetname=0, xmlTag=None):
+          seperator=None, index_col=None, sheetname=0, xmlTag=None, proxies=None):
     
     if (    not (fileName.startswith("http://"))  and
             not (fileName.startswith("https://")) and
@@ -171,7 +173,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     sep = seperator or ",";
     df1=None
     if (fileName.startswith("http")):
-        df1 = getAuraDF(fileName)
+        df1 = getAuraDF(fileName, proxies=proxies)
     elif fileName.endswith(".xlsx") or fileName.endswith(".xlsm") or fileName.endswith(".xlsb"): 
         df1 = getExcelFile(fileName, sheetname)
     elif (fileName.endswith(".xml")):
@@ -193,8 +195,8 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
 
     
 def LoadDataSet(fileOrString, columns=None, excel = False,
-                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None, seperator=None,
-                index_col=None,sheetname=0, xmlTag=None, **kwargs):
+                debug=False, headers=0, names=None, checkForDateTime=False, usecols=None,
+                seperator=None, index_col=None,sheetname=0, xmlTag=None, proxies=None, **kwargs):
     
     if(type(fileOrString) == bytes and excel ):
         d= base64.decodestring(fileOrString);
@@ -213,8 +215,10 @@ def LoadDataSet(fileOrString, columns=None, excel = False,
         ns = [p.split(sep) for p in ps]
         df1 = pd.DataFrame(ns[1:], columns=ns[0], **kwargs);
     else:               
-        df1 = getDF(fileOrString, debug=False, headers=headers, names=names, checkForDateTime=checkForDateTime, 
-                    usecols=usecols, seperator=seperator, index_col=index_col, sheetname=sheetname, xmlTag=xmlTag)     
+        df1 = getDF(fileOrString, debug=False, headers=headers, names=names,
+                    checkForDateTime=checkForDateTime, 
+                    usecols=usecols, seperator=seperator, index_col=index_col, 
+                    sheetname=sheetname, xmlTag=xmlTag, proxies=proxies)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
