@@ -426,7 +426,7 @@ def searchDF(df, s="", maxRows=10):
                 break;
         if (maxRows ==0 or i > 50):
             break
-    df1 = df.iloc[rows];
+    df1 = df.ix[rows];
     return df1;
 
 def colTypesDF(df):
