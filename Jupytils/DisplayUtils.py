@@ -709,9 +709,11 @@ $("#<TABLE_ID> th").resizable()
 </script>
 ''';
 
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, tableID=None, 
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
+               tableID=None, 
                showNav= True, title=None,
-               search=None, cols=[],  showStats = False, editable=True, useMyStyle=True,
+               search=None, cols=[],  showStats = False, editable=True,
+               useMyStyle=True,
                donotDisplay=False ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
@@ -746,7 +748,9 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True, 
             h = h.replace("<table ", "<table wwidth=100% ")
         #
         if (editable):
-            h = h.replace("<td", "<td contenteditable ")
+            nw= "<td style='wwhite-space: nowrap;' contenteditable "
+            #h = h.replace("<td","<td contenteditable ")
+            h = h.replace("<td",nw)
         #
         if (useMyStyle):
             h = h.replace("class='dataframe'", "class='ourTableStyle' ")
