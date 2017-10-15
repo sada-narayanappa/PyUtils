@@ -31,7 +31,8 @@ if 'IPKernelApp' in getipython.get_ipython().config:
 
 
 def PlotHCts(df, x, cols=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
-          onClick='function(){g=this;console.log(g.index, g.y, g.x)}'):
+          onClick='function(){g=this;console.log(g.index, g.y, g.x)}',
+            animation='true'):
     TS='''
 <script>
 Highcharts.chart('CHART_DIV', {
@@ -45,6 +46,7 @@ Highcharts.chart('CHART_DIV', {
     },
     plotOptions: {
         line: {
+            animation: CHART_ANIMATION,
             dataLabels: {  enabled: false  },
             enableMouseTracking: true,
             lineWidth: 0.5,
@@ -110,6 +112,7 @@ Highcharts.chart('CHART_DIV', {
     ts=ts.replace('CHART_SUB_TITLE', subtitle)
     ts=ts.replace('CHART_Y_AXIS_TITLE', yTitle)
     ts=ts.replace('CLICK_FUNCTION', onClick)
+    ts=ts.replace('CHART_ANIMATION', animation)
 
     display(HTML(ts))    
     return ts;
