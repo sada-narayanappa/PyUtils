@@ -11,8 +11,6 @@ import copy
 from IPython.core import getipython
 from IPython.core.display import display, HTML
 
-from .core import serialize
-
 
 # Note that Highstock includes all Highcharts features.
 HIGHCHARTS_SCRIPTS = """
@@ -32,7 +30,7 @@ if 'IPKernelApp' in getipython.get_ipython().config:
 
 
 
-def plotTSHC(df, x, cols=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
+def PlotHCts(df, x, cols=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
           onClick='function(){g=this;console.log(g.index, g.y, g.x)}'):
     TS='''
 <script>
