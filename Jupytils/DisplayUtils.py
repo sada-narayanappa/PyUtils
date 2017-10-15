@@ -748,7 +748,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
             h = h.replace("<table ", "<table wwidth=100% ")
         #
         if (editable):
-            nw= "<td style='wwhite-space: nowrap;' contenteditable "
+            nw= "<td style='white-space: nowrap;' contenteditable "
             #h = h.replace("<td","<td contenteditable ")
             h = h.replace("<td",nw)
         #
