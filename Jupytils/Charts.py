@@ -10,7 +10,7 @@ import copy
 
 from IPython.core import getipython
 from IPython.core.display import display, HTML
-
+import numpy as np;
 
 # Note that Highstock includes all Highcharts features.
 HIGHCHARTS_SCRIPTS = """
