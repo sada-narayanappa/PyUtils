@@ -85,7 +85,7 @@ Highcharts.chart('CHART_DIV', {
     elif (xa.astype(int)[0] > 1000000000000000):
         dt=(xa.astype(int)/1000)[0:num]
     else:
-        xa = x;
+        dt = xa;
         
     dt = [int(c) for c in dt]
     dd=[]
