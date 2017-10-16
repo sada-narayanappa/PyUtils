@@ -69,7 +69,7 @@ Highcharts.chart('CHART_DIV', {
     
     ts ="";
     if ( div is None ):
-        div = 'chart_' + str(random.randint(1000000))
+        div = 'chart_' + str(np.random.randint(1000000))
         ts = '<div id="{}" style="height:200px"></div>\n'.format(div)
         
     if (type(x) == str):
