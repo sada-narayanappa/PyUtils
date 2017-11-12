@@ -20,6 +20,7 @@ import inspect
 import re;
 import json;
 import datetime
+from fractions import Fraction
 
 if (platform == "Windows"):
     from win32com.client import Dispatch
@@ -190,13 +191,15 @@ class LA:
         return s;
 
     @staticmethod
-    def M(m, name="", call_display=True, showdim=True, precision=4):
+    def M(m, name="", useFrac=False, call_display=True, showdim=True, precision=4):
         np.set_printoptions(precision=precision, linewidth=180)
         name = name + " =" if name != "" else ""
         dim = "";
         if (showdim):
             dim = " \\times ".join(map(str, (m.shape) )) ;
-        s = str(m)
+        if (useFrac):
+            m=np.array([ str(Fraction(_).limit_denominator()) for _ in pS[0].flat]).reshape(pS[0].shape)
+        s = str(m).replace("'", '')
         s = s.replace('[', '')
         s = s.replace(']', '')
         s = s.replace('\n', '\\\\\\\\<NEW-LINE>')
@@ -210,13 +213,23 @@ class LA:
             display(Math(s))
         return s;
 
-
     #Display thr matrix
     @staticmethod
-    def display(*M):
+    def display(*M, names=None):
         s = ""
-        for m in M:
-            s+= LA.M(m, call_display=False, showdim=False);
+        if (names is None):
+            names = ["" for i in range(len(M)) ]
+        for i, m in enumerate(M):
+            s+= LA.M(m, name=names[i], call_display=False, showdim=False);
+        display(Math(s))
+
+    #Display thr matrix
+    def Matdisplay(*M, names=None, useFractions=False):
+        s = ""
+        if (names is None):
+            names = ["" for i in range(len(M)) ]
+        for i, m in enumerate(M):
+            s+= LA.M(m, name=names[i], useFrac=useFractions, call_display=False, showdim=False);
         display(Math(s))
 
     def d(self):
