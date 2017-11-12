@@ -105,7 +105,7 @@ Highcharts.chart('CHART_DIV', {
         dat=list(zip(dt, d))
         dd.append({'name': cn, 'data': dat })
 
-    s = 'series: ' + json.dumps(dd) +""
+    s = 'series: ' + pd.io.json.dumps(dd) +""
     ts= ts + TS.replace('DATA',s)
     ts=ts.replace('CHART_DIV', div)
     ts=ts.replace('CHART_TITLE', title)
