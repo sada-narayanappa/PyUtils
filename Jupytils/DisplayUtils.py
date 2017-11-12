@@ -198,8 +198,9 @@ class LA:
         if (showdim):
             dim = " \\times ".join(map(str, (m.shape) )) ;
         if (useFrac):
-            m=np.array([ str(Fraction(_).limit_denominator()) for _ in pS[0].flat]).reshape(pS[0].shape)
+            m=np.array([ str(Fraction(_).limit_denominator()) for _ in m.flat]).reshape(m.shape)
         s = str(m).replace("'", '')
+        s=s.replace('\\\\', '\\')
         s = s.replace('[', '')
         s = s.replace(']', '')
         s = s.replace('\n', '\\\\\\\\<NEW-LINE>')
@@ -224,13 +225,16 @@ class LA:
         display(Math(s))
 
     #Display thr matrix
-    def Matdisplay(*M, names=None, useFractions=False):
+    def Matdisplay(*M, names=None, useFractions=False, display=False):
         s = ""
         if (names is None):
             names = ["" for i in range(len(M)) ]
         for i, m in enumerate(M):
             s+= LA.M(m, name=names[i], useFrac=useFractions, call_display=False, showdim=False);
-        display(Math(s))
+
+        if (display):
+            display(Math(s))
+        return (s)
 
     def d(self):
         self.display(self.a, self.name)
