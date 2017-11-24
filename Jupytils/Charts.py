@@ -7,6 +7,7 @@ import string
 import random
 import json
 import copy
+import pandas as pd
 
 from IPython.core import getipython
 from IPython.core.display import display, HTML
