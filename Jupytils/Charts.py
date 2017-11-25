@@ -33,11 +33,13 @@ if 'IPKernelApp' in getipython.get_ipython().config:
 
 def PlotHCts(df, x, cols=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
           onClick='function(){g=this;console.log(g.index, g.y, g.x)}',
-            animation='true'):
+            animation='true', ctype=None):
     TS='''
-<script>
+<script src="//code.highcharts.com/stock/highstock.js"></script>
+<script src="//code.highcharts.com/highcharts-more.js"></script>
+<script src="//code.highcharts.com/modules/exporting.js"></script><script>
 Highcharts.chart('CHART_DIV', {
-    chart: { type: 'line' ,  zoomType: 'x'},
+    chart: { type: 'line' ,  zoomType: 'x' },
     title: { text: 'CHART_TITLE' , zoomType:'xy' },
     subtitle: { text: 'CHART_SUB_TITLE' },
     xAxis: {type: 'datetime'
@@ -46,12 +48,21 @@ Highcharts.chart('CHART_DIV', {
         title: { text: 'CHART_Y_AXIS_TITLE'}
     },
     plotOptions: {
+        scatter: {
+            marker: { radius: 3},
+            states: {
+                hover: {
+                    enabled: true,
+                    lineColor: 'rgb(100,100,100)'
+                }
+            }
+        },
         line: {
             animation: CHART_ANIMATION,
             dataLabels: {  enabled: false  },
             enableMouseTracking: true,
-            lineWidth: 0.5,
-            marker: {radius: 3}
+            lineWidth: 0.1,
+            marker: { radius: 3} 
             },
             
             series: {
@@ -115,6 +126,9 @@ Highcharts.chart('CHART_DIV', {
     ts=ts.replace('CLICK_FUNCTION', onClick)
     ts=ts.replace('CHART_ANIMATION', animation)
 
+    if (ctype != None):
+        ts=ts.replace("type: 'line'","type: '{}'".format(ctype));
+        
     display(HTML(ts))    
     return ts;
 
