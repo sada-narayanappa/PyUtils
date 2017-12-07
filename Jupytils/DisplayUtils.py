@@ -490,8 +490,12 @@ def createIcon(df,idx):
             t = t.value_counts();
             k = "bar";
     if not isAnyDataPoint(t):  
-       return None;
-               
+        return None;
+    
+    if str(df.dtypes[idx]) == "category":
+        t = t.astype(int).value_counts();
+        k = "bar";
+
     #print ("N= " , df.columns[idx]);
     ax=t.plot(kind=k, figsize=(1*scale, 0.5*scale), grid=True);
     ax.get_xaxis().set_visible(True)
