@@ -161,7 +161,7 @@ def getExcelFile(fileName, sheetname=0, headers=None):
     return df2;
     
 def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkForDateTime=False, 
-          seperator=None, index_col=None, sheetname=0, xmlTag=None, proxies=None):
+          seperator=None, index_col=None, sheetname=0, xmlTag=None, proxies=None, nrows=None):
     
     if (    not (fileName.startswith("http://"))  and
             not (fileName.startswith("https://")) and
@@ -190,13 +190,13 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
                 sep = DetermineSeperator(line);
                 
         df1 = pd.read_csv(fileName, sep=sep, header=headers, low_memory=False,
-                       skipinitialspace =True, names=names, comment='#', usecols=usecols)
+                       skipinitialspace =True, names=names, comment='#', usecols=usecols, nrows=nrows)
     return df1;
 
     
 def LoadDataSet(fileOrString, columns=None, excel = False,
                 debug=False, headers=0, names=None, checkForDateTime=False, usecols=None,
-                seperator=None, index_col=None,sheetname=0, xmlTag=None, proxies=None, **kwargs):
+                seperator=None, index_col=None,sheetname=0, xmlTag=None, proxies=None, nrows=None, **kwargs):
     
     if(type(fileOrString) == bytes and excel ):
         d= base64.decodestring(fileOrString);
@@ -218,7 +218,7 @@ def LoadDataSet(fileOrString, columns=None, excel = False,
         df1 = getDF(fileOrString, debug=False, headers=headers, names=names,
                     checkForDateTime=checkForDateTime, 
                     usecols=usecols, seperator=seperator, index_col=index_col, 
-                    sheetname=sheetname, xmlTag=xmlTag, proxies=proxies)     
+                    sheetname=sheetname, xmlTag=xmlTag, nrows=nrows,proxies=proxies)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
