@@ -144,9 +144,9 @@ def getFormulas(ws, df2):
                 formulas[(ii,jj)] = v
     return formulas
 
-def getExcelFile(fileName, sheetname=0):
+def getExcelFile(fileName, sheetname=0, headers=None):
     import openpyxl
-    df2 = pd.read_excel(fileName, header=None, sheetname=sheetname)
+    df2 = pd.read_excel(fileName, header=headers, sheetname=sheetname)
     colNames = [openpyxl.utils.get_column_letter(c) for c in range(1,df2.shape[1]+1) ]
     df2.columns = (colNames)
 
@@ -175,7 +175,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     if (fileName.startswith("http")):
         df1 = getAuraDF(fileName, proxies=proxies)
     elif fileName.endswith(".xlsx") or fileName.endswith(".xlsm") or fileName.endswith(".xlsb"): 
-        df1 = getExcelFile(fileName, sheetname)
+        df1 = getExcelFile(fileName, sheetname, headers)
     elif (fileName.endswith(".xml")):
         df1 = getDFFromXML(fileName, xmlTag)
     elif ("/aura/" in fileName):
