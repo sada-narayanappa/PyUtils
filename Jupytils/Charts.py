@@ -81,7 +81,7 @@ Highcharts.chart('CHART_DIV', {
 '''
     
     @staticmethod
-    def tsDF(df, x, cols=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
+    def tsDF(df, x, cols=[], names=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
               onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int'):
         '''
         Plot High Chart assuing the data is in panadas dataframe. 
@@ -91,7 +91,7 @@ Highcharts.chart('CHART_DIV', {
         ts =HighCharts.TS;
         if ( div is None ):
             div = 'DIVchart_' + str(np.random.randint(1000000))
-            ts = '<div id="{}" style="height:200px"></div>\n'.format(div)
+            ts = '<div id="{}" style="height:200px"></div>\n'.format(div) + ts
 
         if (type(x) == str):   xa = df[x]
         elif (type(x) == int): xa = df[df.columns[x]]
@@ -108,7 +108,7 @@ Highcharts.chart('CHART_DIV', {
         dt = [int(c) for c in dt]
         dd=[]
 
-        for c in cols:
+        for i, c in enumerate(cols):
             if ( type(c) == str):
                 d=list(df[c].values[0:num])
                 cn=c
@@ -116,7 +116,7 @@ Highcharts.chart('CHART_DIV', {
                 cn=df.columns[c]
                 d=list(df[cn].values[0:num])
             else:
-                cn="List"
+                cn= "List "+i if names is None or i >= len(names) else names[i]
                 d=c;
 
             dat=list(zip(dt, d))

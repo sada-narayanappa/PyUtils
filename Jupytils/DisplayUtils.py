@@ -441,7 +441,7 @@ def searchDF(df, s="", maxRows=10):
                 maxRows = maxRows -1;
                 rows.append(i)
                 break;
-        if (maxRows ==0 or i > 50):
+        if (maxRows ==0):
             break
     df1 = df.ix[rows];
     return df1;
