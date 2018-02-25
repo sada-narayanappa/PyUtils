@@ -854,11 +854,15 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
         tit = tit + " " + dim if (tit is not None) else dim
         otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + tit + " var: " + dfVarNme + "<br>\n" + h + "</td>{}".format(tabSep)
     otr += "</tr></table>"
+    
+    if ( len(dfs) <=1):
+        otr = otr.replace('wwidth', 'width')
+    
     if (divName is not None):
         renderTo(divName, otr)
     elif (not donotDisplay):
         display(HTML(otr))
-        
+    
     return otr
 
 def renderTo(div, html):
