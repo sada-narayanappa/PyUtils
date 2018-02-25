@@ -1,4 +1,9 @@
 <!-- script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script> -->
+<style>
+.sortdnafter:after { content: "\2193"}
+.sortupafter:after { content: "\2191";}
+</style>
+
 <script>
 //----------------------------------------------------------------------------
 String.prototype.format = function (){
@@ -228,7 +233,7 @@ function UpdateTableShowRows( tab_maxDisp, tableID, out) {
     var i=o.idxs.length-1;
     $(trs).reverse().each(function ()
     {
-        if (i >=0)
+        if (i > 0)
             $(this).text( o.idxs[i--]);
         else
             return;
@@ -340,6 +345,72 @@ function AddFocus(tableID, dispRows) {
             console.log(ct)
         });
     });
+}
+    
+ 
+function TableSortRows( dispRows, tableID, out) {
+    o1 = out;
+    if (o1.startsWith("'") || o1.startsWith('"') )
+        o1 = out.slice(1, -1)
+    if (o1.startsWith ("error")){
+        console.log(out)
+        return
+    }
+    //console.log("Setting value:[" + o1 +"]")
+    $(tabID).attr('sort',o1)
+    TableShowRows(0, dispRows, tabID)
+    
+    gg= $(tabID).find('tr:first th')
+    gg.each(function(){
+        $(this).removeClass('sortdnafter')
+        $(this).removeClass('sortupafter')
+    })
+        
+    sp = o1.split('|')
+    s1 = sp[0].split(',')
+    s2 = sp[1].split(',')
+    
+    for (i=0; i < s1.length; i++) {
+        ctext = s1[i]
+        aclass = parseInt(s2[i]) ? "sortupafter" : "sortdnafter"
+        gg.each(function(){
+            if ($(this).text() === ctext)
+                $(this).addClass(aclass)
+        })
+    }
+}
+    
+function SetSort(tableID) {
+    tabID= "#"+tableID
+    if (tableID.startsWith('#')) {
+        tabID = tableID
+        tableID = tableID.slice(1)
+    }
+    dispRows = $(tabID).find('tr:last').index() + 1
+    
+    gg= $(tabID).find('tr:first th')
+
+    gg.each(function(){
+        console.log( "!!")
+        $(this).unbind('dblclick')
+        $(tabID).attr('sort','')
+
+        $(this).dblclick (function(evt){
+            sh =  (evt.shiftKey)        
+            i = $(this).index();
+            t = $(this).text()
+            
+            sort = $(tabID).attr('sort')
+            if ( typeof(sort) == "undefined" || (!sh && !sort.startsWith(t+"|")) ) 
+                sort = ""
+
+            dfName = "DFF_PY_VAR_" + tableID;
+            cb = TableSortRows.bind(null, dispRows, tabID)
+            command =  "sortDF({0}, '{1}', '{2}')".format(dfName, sort, t)
+            gu.callPython(command, cb) ;
+            console.log( i + " : " + t + " : " + sh + " " + command)
+        })
+    })
 }
 </script>
 

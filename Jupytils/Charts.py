@@ -14,33 +14,23 @@ from IPython.core.display import display, HTML
 import numpy as np;
 
 # Note that Highstock includes all Highcharts features.
-HIGHCHARTS_SCRIPTS = """
-<script src="//code.highcharts.com/stock/highstock.js"></script>
-<script src="//code.highcharts.com/highcharts-more.js"></script>
-<script src="//code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/highcharts.js"></script>
+HIGHCHARTS_SCRIPTS1 = "https://code.highcharts.com/highcharts.js"
+HIGHCHARTS_SCRIPTS2 = """
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
 """
 
 def load_highcharts():
-    return display(HTML(HIGHCHARTS_SCRIPTS))
+    #display(HTML(HIGHCHARTS_SCRIPTS1))
+    display(HTML(HIGHCHARTS_SCRIPTS2))
 
 # Automatically insert the script tag into your Notebook.
 # Call when you import this module.
 if 'IPKernelApp' in getipython.get_ipython().config:
     load_highcharts()
 
-# Note that Highstock includes all Highcharts features.
-HIGHCHARTS_SCRIPTS = """
-<script src="//code.highcharts.com/stock/highstock.js"></script>
-<script src="//code.highcharts.com/highcharts-more.js"></script>
-<script src="//code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
-"""
-
-
-display(HTML(HIGHCHARTS_SCRIPTS))
 
 class HighCharts:
     TS='''<script>
@@ -81,7 +71,7 @@ Highcharts.chart('CHART_DIV', {
 '''
     
     @staticmethod
-    def tsDF(df, x, cols=[], names=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
+    def tsDF(df, x=None, cols=[], names=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
               onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int'):
         '''
         Plot High Chart assuing the data is in panadas dataframe. 
@@ -94,16 +84,18 @@ Highcharts.chart('CHART_DIV', {
             ts = '<div id="{}" style="height:200px"></div>\n'.format(div) + ts
 
         if (type(x) == str):   xa = df[x]
+        elif (x is None): xa = pd.Series(df.index)
         elif (type(x) == int): xa = df[df.columns[x]]
         else: xa = x
 
-        if (len(df) <=0 ): return;
-        if (xa.astype(int)[0] > 1000000000000000000):
-            dt=(xa.astype(int)/1000000)[0:num]
-        elif (xa.astype(int)[0] > 1000000000000000):
-            dt=(xa.astype(int)/1000)[0:num]
-        else:
-            dt = xa;
+        dt = xa
+        try:
+            if (xa.astype(int)[0] > 1000000000000000000):
+                dt=(xa.astype(int)/1000000)[0:num]
+            elif (xa.astype(int)[0] > 1000000000000000):
+                dt=(xa.astype(int)/1000)[0:num]
+        except:
+            pass;
 
         dt = [int(c) for c in dt]
         dd=[]
@@ -129,7 +121,7 @@ Highcharts.chart('CHART_DIV', {
         ts=ts.replace('CHART_SUB_TITLE', subtitle)
         ts=ts.replace('CHART_Y_AXIS_TITLE', yTitle)
         ts=ts.replace('CHART_X_AXIS_TITLE', xTitle)
-        ts=ts.replace('CLICK_FUNCTION', onClick)
+        ts=ts.replace("'CLICK_FUNCTION'", onClick)
         ts=ts.replace('datetime', dtype)
 
         if (ctype != None):

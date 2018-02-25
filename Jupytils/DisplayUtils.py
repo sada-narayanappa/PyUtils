@@ -4,7 +4,7 @@ import numpy as np
 #from sklearn import neighbors, datasets
 import matplotlib.pyplot as plt
 import pandas as pd
-from IPython.display import HTML
+from IPython.display import HTML, Javascript
 import os
 import glob;
 import re;
@@ -582,7 +582,6 @@ def addDescribe(df,h):
     return ret;
 
 def getHTMLTableRows(dff, startRow=0, maxRows = 5):
-    
     startRow = startRow if startRow >=0 else 0;
     e = startRow + maxRows
     
@@ -608,7 +607,6 @@ def getHTMLTableRows(dff, startRow=0, maxRows = 5):
     return ret
 
 def getHTMLTableRowsFromIndex(dff, idx=0, dispRows = 5, goBack=True):
-    
     if (dff.index.is_numeric()):
         startRow = dff.index.get_loc(int(idx) )
     else:
@@ -626,7 +624,7 @@ def getHTMLTableRowsFromIndex(dff, idx=0, dispRows = 5, goBack=True):
     e = startRow + dispRows
     ddd=dff[startRow:e]
 
-    vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
+    vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags= re.DOTALL|re.M|re.IGNORECASE)
     vals = [v.replace("'", '\\\'') for v in vals]
     vals = [v.replace("\n", '\\n') for v in vals]
    
@@ -680,10 +678,9 @@ def UpdateDataFrame(dff, row, col, val):
 
 def UpdateDataFrameFromHTML(html, dff=None):
 
-    vals = re.findall('<td.*?>(.*?)</td>',  html, flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
-    idxs = re.findall('<th.*?>(.*?)</th>',  html, flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
-    rows = re.findall('<tr.*?>(.*?)</tr>',  html, flags=re.DOTALL|re.M|re.MULTILINE|re.IGNORECASE)
-
+    vals = re.findall('<td.*?>(.*?)</td>',  html, flags=re.DOTALL|re.M|re.IGNORECASE)
+    idxs = re.findall('<th.*?>(.*?)</th>',  html, flags=re.DOTALL|re.M|re.IGNORECASE)
+    rows = re.findall('<tr.*?>(.*?)</tr>',  html, flags=re.DOTALL|re.M|re.IGNORECASE)
 
     nRows = len(rows)
     nCols = int(len(vals)/nRows)
@@ -708,6 +705,46 @@ def UpdateDataFrameFromHTML(html, dff=None):
     for i, r in dft.iterrows():
         dff.loc[i:i,:] = dft.loc[i:i,:]
 
+
+#
+# Sort Dataframe based on columns and order given comman sepearated columns and order
+# order determines ascending or descending
+# if cur is one already exists - then that column order will be flipped 
+# if cur is empty then it will be added to ordering with default of ascending
+#
+# Examples: 
+#   corder="col1,col2|1,0", cur='col1' => orders df based on col1, col2 both ascending 
+#   corder="col1,col2|1,0", cur='col3' => orders df based on col1, col2, col3 | ascend, decend, ascend 
+#   corder="col1,col2|1,0", cur=''     => orders df based on index and removes any sorted order 
+#   
+#
+def sortDF(df, corder="col1,col2|1,0", cur='col1'):
+    #print("sorting ....") 
+    if ( not cur ):
+        df=df.sort_index(inplace=True)
+        return ''
+    
+    corder = corder if corder.find('|') >= 0 else corder + "|"
+    cols,order = corder.split('|')
+    ccols=[c.strip() for c in cols.split(',') if c.strip()]
+    if(order):
+        order=[int(c) for c in order.split(',')]
+    else:
+        order = [1 for c in ccols]
+    if cur in ccols :
+        i = ccols.index(cur)
+        order[i] = 0 if order[i] else 1
+        #print("in the list: {} {} {}".format(i, order, cur) )
+    else:
+        ccols.append(cur)
+        order.append(1)
+        #print("NOT in the list: {} {} {}".format(order, cur, ccols) )
+    
+    ret = ",".join(ccols) + "|" + ",".join([str(c) for c in order])
+    df.sort_values(ccols, ascending=order, inplace=True)
+    return ret
+        
+
 navigation_buttons = '''
 <div style="display:block;height:20px">
 
@@ -725,17 +762,16 @@ onkeyup = "if (event.keyCode == 13) TableShowRows( $(this).val(), MAXDISP, '#<TA
 </div>
 <script>
 AddFocus('#<TABLE_ID>', MAXDISP);
+SetSort('#<TABLE_ID>');
 $("#<TABLE_ID> th").resizable()
 
 </script>
 ''';
 
 def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
-               tableID=None, 
-               showNav= True, title=None,
+               tableID=None,  showNav= True, title=None,
                search=None, cols=[],  showStats = False, editable=True,
-               useMyStyle=True,
-               donotDisplay=False ):
+               useMyStyle=True, donotDisplay=False, divName=None ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
@@ -818,8 +854,18 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
         tit = tit + " " + dim if (tit is not None) else dim
         otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + tit + " var: " + dfVarNme + "<br>\n" + h + "</td>{}".format(tabSep)
     otr += "</tr></table>"
-    if (not donotDisplay):
+    if (divName is not None):
+        renderTo(divName, otr)
+    elif (not donotDisplay):
         display(HTML(otr))
         
     return otr
 
+def renderTo(div, html):
+    hh = re.sub(r'\n\s*\n*', '', html)
+    hh = hh.replace ("\n", "\\")
+    hh = hh.replace ('"', '\\"')
+    div = div if div.startswith('#') else '#'+div
+    hh1='''$('{}').html("{}")'''.format(div, hh)
+    display(Javascript(hh1))
+    return hh1

@@ -194,7 +194,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     return df1;
 
     
-def LoadDataSet(fileOrString, columns=None, excel = False,
+def LoadDataSet(fileOrString, columns=None, excel = False, callConvert=True,
                 debug=False, headers=0, names=None, checkForDateTime=False, usecols=None,
                 seperator=None, index_col=None,sheetname=0, xmlTag=None, proxies=None, nrows=None, **kwargs):
     
@@ -222,8 +222,10 @@ def LoadDataSet(fileOrString, columns=None, excel = False,
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
-    #df1=df1.convert_objects(convert_numeric=False)
     df2 = df1[columns] if (columns != None ) else df1;
+
+    if (callConvert):
+        df2=df2.convert_objects(convert_numeric=True, convert_dates=False)
 
     if (checkForDateTime):
         for i, c in enumerate(df1.columns):
