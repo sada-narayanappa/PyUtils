@@ -267,9 +267,19 @@ function TableShowRows( gg, tab_maxDisp, tableID) {
 //    console.log("Executing Command: " + command );
 }
 
-function Page(back, dispRows, tableID){
-    last = $(tableID).find('th:last').text()
+function TableRefresh(tableID) {
+    nRows = $(tableID).find('tr:last').index()+1
+    last = $(tableID).find('th:last').text()    
+    dfName = "DFF_PY_VAR_" + tableID.substr(1);
     
+    command = "getHTMLTableRowsFromIndex1({0},idx='{1}',dispRows={2})".format(dfName, last, nRows )
+    cb = UpdateTableShowRows.bind(null, dispRows, tableID)
+    gu.callPython( command, cb) ;
+//    console.log("Executing Command: " + command );
+}
+    
+function Page(back, dispRows, tableID){
+    last = $(tableID).find('th:last').text()    
     dfName = "DFF_PY_VAR_" + tableID.substr(1);
     
     command = "getHTMLTableRowsFromIndex({0},idx='{1}',dispRows={2},goBack={3})".format(dfName, last, dispRows,back )

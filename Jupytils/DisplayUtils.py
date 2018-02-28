@@ -640,6 +640,38 @@ def getHTMLTableRowsFromIndex(dff, idx=0, dispRows = 5, goBack=True):
     
     return ret
 
+# Simply return the Table without moving
+def getHTMLTableRowsFromIndex1(dff, idx=0, dispRows = 5):
+    if (dff.index.is_numeric()):
+        startRow = dff.index.get_loc(int(idx) )
+    else:
+        startRow = dff.index.get_loc(idx )
+
+    topRow = startRow - dispRows +1;
+    
+    if ( startRow > len(dff)-1):
+        topRow = len(dff) - dispRows
+    
+    startRow = max(topRow,0)
+    e = startRow + dispRows
+    ddd=dff[startRow:e]
+
+    vals = re.findall('<td>(.*?)</td>',  ddd.to_html(), flags= re.DOTALL|re.M|re.IGNORECASE)
+    vals = [v.replace("'", '\\\'') for v in vals]
+    vals = [v.replace("\n", '\\n') for v in vals]
+   
+    if (dff.index.dtype_str.startswith('datetime')):
+        idxs = list(ddd.index.astype(str))
+    else:
+        idxs = [""] + (list(ddd.index) )
+    
+    #ret = '''"vals": {}; "idxs": {}'''.format(json.dumps(vals), json.dumps(idxs))
+    ret = '''{{"vals": {}, "idxs": {}}}'''.format(json.dumps(vals), (idxs) )
+    
+    ret = ret.replace("'", '"')
+    
+    return ret
+
 def getHTMLTableRowsFromSearch(dff, searchString=None, maxRows=10):
     searchString = str(searchString)
     if (searchString is None or len(str(searchString).strip()) < 0):
