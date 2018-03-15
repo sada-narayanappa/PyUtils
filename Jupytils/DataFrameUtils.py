@@ -76,6 +76,9 @@ def getDFFromXML(file, xmlTag=None, maxRows=1000000):
     with open(file, "r") as f:
         xmlText = f.read()
 
+    if(maxRows is None):
+        maxRows=1000000
+    
     root = ET.fromstring(xmlText)
     
     if (xmlTag):
@@ -177,7 +180,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     elif fileName.endswith(".xlsx") or fileName.endswith(".xlsm") or fileName.endswith(".xlsb"): 
         df1 = getExcelFile(fileName, sheetname, headers)
     elif (fileName.endswith(".xml")):
-        df1 = getDFFromXML(fileName, xmlTag)
+        df1 = getDFFromXML(fileName, xmlTag, nrows)
     elif ("/aura/" in fileName):
         df1 = getAuraDF(fileName);
         return df1

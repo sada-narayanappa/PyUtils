@@ -35,13 +35,29 @@ if 'IPKernelApp' in getipython.get_ipython().config:
 class HighCharts:
     TS='''<script>
 Highcharts.chart('CHART_DIV', {
+    colors: ['#0072BC', '#BFDAFF', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4'],
     navigation: { buttonOptions: { enabled: false } },
     credits: { enabled: false},
-    chart: { type: 'line' ,  zoomType: 'x' },
+    chart: { type: 'line' ,  zoomType: 'x', backgroundColor: 'rgba(255, 255, 128, 0.1)' },
     title: { text: 'CHART_TITLE' , zoomType:'xy' },
     subtitle: { text: 'CHART_SUB_TITLE' },
-    xAxis: { title: { text: 'CHART_X_AXIS_TITLE' }, type: 'datetime'},
+    xAxis: { 
+        plotLines: [{
+            color: '#FF0000', // Red
+            width: 2,
+            value: 'XREFLINE' // Position, you'll have to translate this to the values on your x axis
+        }],
+        title: { text: 'CHART_X_AXIS_TITLE' }, 
+        type: 'datetime'
+        },
     yAxis: { title: { text: 'CHART_Y_AXIS_TITLE'}},
+    tooltip: {
+        fformatter:function(){
+            $('#tooltip').html('Point Y: '+this.y);
+        },
+        backgroundColor: 'rgba(247,247,247,0.6)',
+        borderWidth: '0px'
+    },
     plotOptions: {
         scatter: {
             marker: { radius: 3},
@@ -56,29 +72,35 @@ Highcharts.chart('CHART_DIV', {
             animation: true,
             dataLabels: {  enabled: false  },
             enableMouseTracking: true,
-            lineWidth: 0.1,
-            marker: { radius: 3} 
-            },
+            lineWidth: .8,
+            marker: { radius: 2} 
+        },
         histogram: {
             type: 'column',
             },
             
-        series: { point: { events: { click: 'CLICK_FUNCTION' } } }
-        },
-        DATA
+        series: { 
+            showInLegend: SHOWLEGEND,
+            point: { events: { click: 'CLICK_FUNCTION' } },
+            states:{ hover: { enabled: true }  },
+            ccolor: "rgba(255,255,0,0.1)",
+            mmarker: {fillOpacity: 03, ffillColor: "rgba(255,0,0,3.0)",},
+        }
+    },
+    DATA
 });
 </script>
 '''
     
     @staticmethod
     def tsDF(df, x=None, cols=[], names=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
-              onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int'):
+              onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int', xref=None):
         '''
         Plot High Chart assuing the data is in panadas dataframe. 
         Provide a div if it needs to be plotted inside a div or one will be creaeted for you. 
         '''
         
-        ts =HighCharts.TS;
+        ts = HighCharts.TS;
         if ( div is None ):
             div = 'DIVchart_' + str(np.random.randint(1000000))
             ts = '<div id="{}" style="height:200px"></div>\n'.format(div) + ts
@@ -123,12 +145,15 @@ Highcharts.chart('CHART_DIV', {
         ts=ts.replace('CHART_X_AXIS_TITLE', xTitle)
         ts=ts.replace("'CLICK_FUNCTION'", onClick)
         ts=ts.replace('datetime', dtype)
+        ts=ts.replace("'XREFLINE'", str(xref))
+        ts=ts.replace("SHOWLEGEND", 'false')
 
         if (ctype != None):
             ts=ts.replace("type: 'line'","type: '{}'".format(ctype));
 
         display(HTML(ts))    
         return ts;
+    
     
     
     histHTML ='''
