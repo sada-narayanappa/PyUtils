@@ -42,6 +42,11 @@ Highcharts.chart('CHART_DIV', {
     title: { text: 'CHART_TITLE' , zoomType:'xy' },
     subtitle: { text: 'CHART_SUB_TITLE' },
     xAxis: { 
+        plotBands: [{
+            color: 'rgba(255,45,0,0.1)', // Color value
+            from: BAND_1,         // Start of the plot band
+            to:   BAND_2          // End of the plot band
+        }],
         plotLines: [{
             color: '#FF0000', // Red
             width: 2,
@@ -94,11 +99,13 @@ Highcharts.chart('CHART_DIV', {
     
     @staticmethod
     def tsDF(df, x=None, cols=[], names=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
-              onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int', xref=None):
+             onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int', xref=None,
+             legend=True, band1=0, band2=0):
         '''
         Plot High Chart assuing the data is in panadas dataframe. 
         Provide a div if it needs to be plotted inside a div or one will be creaeted for you. 
         '''
+        xref = xref if xref else 2*len(df);
         
         ts = HighCharts.TS;
         if ( div is None ):
@@ -146,7 +153,10 @@ Highcharts.chart('CHART_DIV', {
         ts=ts.replace("'CLICK_FUNCTION'", onClick)
         ts=ts.replace('datetime', dtype)
         ts=ts.replace("'XREFLINE'", str(xref))
-        ts=ts.replace("SHOWLEGEND", 'false')
+        leg = 'true' if legend else 'false'
+        ts=ts.replace("SHOWLEGEND", leg)
+        ts=ts.replace("BAND_1", str(band1))
+        ts=ts.replace("BAND_2", str(band2))
 
         if (ctype != None):
             ts=ts.replace("type: 'line'","type: '{}'".format(ctype));
