@@ -9,3 +9,4 @@ __p*
 Jupytils.egg*
 build/*
 dist/*
+*.BAK

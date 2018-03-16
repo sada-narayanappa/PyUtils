@@ -1,7 +1,9 @@
 from setuptools import setup
 
+version=0.38
+
 setup(name='Jupytils',
-      version='0.34',
+      version=str(version),
       description='Productive Simple Intuitive Jupyter Python Utilities',
       url='https://github.com/sada-narayanappa/PyUtils.git',
       author='Code Red',
@@ -34,5 +36,7 @@ setup(name='Jupytils',
           'Programming Language :: Python :: 3.2',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
       ],
 )

@@ -1,7 +1,11 @@
 #Packaging
 #=========
 #[ ]
-\rm -rf dist
+\rm -rf dist Jupytils/__pycache__
+python upver.py
+VER=`cat Jupytils/version.txt `
+echo "Installing VERSION: $VER"
+
 python setup.py sdist
 python setup.py bdist_wheel --universal
 

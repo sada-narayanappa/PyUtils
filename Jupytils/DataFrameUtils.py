@@ -224,7 +224,7 @@ def LoadDataSet(fileOrString, columns=None, excel = False, callConvert=True,
                     checkForDateTime=checkForDateTime, 
                     usecols=usecols, seperator=seperator, index_col=index_col, 
                     sheetname=sheetname, xmlTag=xmlTag, nrows=nrows,proxies=proxies,
-                   comment)     
+                   comment=comment)     
 
     if ( df1 is None or str(type(df1)).find("DataFrame") < 0):
         return df1;
