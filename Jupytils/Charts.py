@@ -85,11 +85,12 @@ Highcharts.chart('CHART_DIV', {
             },
             
         series: { 
+            allowPointSelect: true,
             showInLegend: SHOWLEGEND,
             point: { events: { click: 'CLICK_FUNCTION' } },
             states:{ hover: { enabled: true }  },
             ccolor: "rgba(255,255,0,0.1)",
-            mmarker: {fillOpacity: 03, ffillColor: "rgba(255,0,0,3.0)",},
+            marker: {fillOpacity: 03, ffillColor: "rgba(255,0,0,3.0)",},
         }
     },
     DATA

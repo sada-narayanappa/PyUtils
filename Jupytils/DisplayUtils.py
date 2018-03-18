@@ -818,7 +818,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
             continue;
             
         bg = bg2 if ( bg == bg1 ) else bg1;
-        dim = str(nd.shape[0]) + " rows x " + str(nd.shape[1]) + " columns";
+        dim = str(nd.shape[0]) + "x" + str(nd.shape[1]);
         
         if(search):
             d =searchDF(nd,search,cols);

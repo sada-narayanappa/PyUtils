@@ -198,7 +198,7 @@ def getDF(fileName, debug=False, headers=None, names=None, usecols=None, checkFo
     return df1;
 
     
-def LoadDataSet(fileOrString, columns=None, excel = False, callConvert=True,
+def LoadDataSet(fileOrString, columns=None, excel = False, callConvert=False,
                 debug=False, headers=0, names=None, checkForDateTime=False, usecols=None,
                 seperator=None, index_col=None,sheetname=0, xmlTag=None, proxies=None, 
                 nrows=None, comment=None, **kwargs):
