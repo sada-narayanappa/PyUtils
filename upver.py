@@ -9,7 +9,7 @@ for vers in txt.split("\n"):
 	if (vers.startswith("version")):
 		break;
 
-n=float(vers.split('=')[1])+0.01
+n=float(vers.split('=')[1])+0.001
 nv="version="+ str(n)
 
 ntxt = txt.replace(vers, nv);
