@@ -101,7 +101,7 @@ Highcharts.chart('CHART_DIV', {
     @staticmethod
     def tsDF(df, x=None, cols=[], names=[], div=None, title='', subtitle='', yTitle='',xTitle='', num=1000000,
              onClick='function(){g=this;console.log(g.index, g.y, g.x)}', ctype=None, dtype='int', xref=None,
-             legend=True, band1=0, band2=0):
+             legend=True, band1=0, band2=0, callDisplay=True):
         '''
         Plot High Chart assuing the data is in panadas dataframe. 
         Provide a div if it needs to be plotted inside a div or one will be creaeted for you. 
@@ -162,7 +162,8 @@ Highcharts.chart('CHART_DIV', {
         if (ctype != None):
             ts=ts.replace("type: 'line'","type: '{}'".format(ctype));
 
-        display(HTML(ts))    
+        if ( callDisplay):
+            display(HTML(ts))    
         return ts;
     
     
