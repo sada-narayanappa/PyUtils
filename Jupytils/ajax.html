@@ -357,7 +357,31 @@ function AddFocus(tableID, dispRows) {
     });
 }
     
- 
+function AddClickCB(tableID, clickCB) {
+    if ( !tableID.startsWith("#"))
+        tableID  =  "#" + tableID;
+    var cols = $(tableID).find('td:last').index()
+    var rows = $(tableID).find('tr:last').index() + 1
+    
+    i = rows * cols
+    
+    console.log( "==>" + tableID + " :" + i + ":"+ rows + ":"+ cols);
+    tdss = $(tableID).find('td')
+    $(tdss).reverse().each(function () {
+        if (i < 0)
+            return;
+        i--;
+        $(this).unbind('click')
+        $(this).click( function() {
+            var tdText = $(this).text()
+            var thText = $(this).closest('tr').find('th').text();
+            var tdIndx = $(this).index()-1;
+            
+            clickCB(tdText, thText, tdIndx, $(this))
+        }); 
+    });
+}
+    
 function TableSortRows( dispRows, tableID, out) {
     o1 = out;
     if (o1.startsWith("'") || o1.startsWith('"') )
@@ -401,7 +425,7 @@ function SetSort(tableID) {
     gg= $(tabID).find('tr:first th')
 
     gg.each(function(){
-        console.log( "!!")
+        //console.log( "!!")
         $(this).unbind('dblclick')
         $(tabID).attr('sort','')
 
