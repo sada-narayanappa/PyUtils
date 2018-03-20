@@ -192,6 +192,25 @@ gu.callPython($('#pycode').val(), gu.cleanPyOut);
 <script>
 jQuery.fn.reverse = [].reverse;
 
+    
+function ExcecuteAllCells(content){
+    if ( typeof content !== "string" ){
+        console.log( "content must be a string : ]=: " + typeof content)
+        return;
+    }
+    start = 0;
+    cell = Jupyter.notebook.get_cell(start);
+    while(cell) {
+        code = cell.get_text();
+        if ( code.startsWith(content)) {
+            console.log("Executing: " + cell);
+            cell.execute()
+        }
+        start += 1
+        cell = Jupyter.notebook.get_cell(start);
+    }
+}    
+    
 function UpdateTableShowRows( tab_maxDisp, tableID, out) {
     if(out.length <=10)
         return
@@ -305,7 +324,7 @@ function ShowSearchResults(resultsDIV, html){
     if ( html.startsWith("'") && html.endsWith("'") ){
         html = html.slice(1, -1);
     }
-    $(resultsDIV).html("Search Results:<br/>" + html)
+    $(resultsDIV).html(html)
 }
 function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
     v1 = tableID +'_search'
@@ -358,6 +377,9 @@ function AddFocus(tableID, dispRows) {
 }
     
 function AddClickCB(tableID, clickCB) {
+    if (!clickCB)
+        return;
+    
     if ( !tableID.startsWith("#"))
         tableID  =  "#" + tableID;
     var cols = $(tableID).find('td:last').index()

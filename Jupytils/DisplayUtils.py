@@ -795,6 +795,7 @@ onkeyup = "if (event.keyCode == 13) TableShowRows( $(this).val(), MAXDISP, '#<TA
 <script>
 AddFocus('#<TABLE_ID>', MAXDISP);
 SetSort('#<TABLE_ID>');
+AddClickCB('#<TABLE_ID>', onClickCB);
 $("#<TABLE_ID> th").resizable()
 
 </script>
@@ -803,7 +804,7 @@ $("#<TABLE_ID> th").resizable()
 def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
                tableID=None,  showNav= True, title=None,
                search=None, cols=[],  showStats = False, editable=True,
-               useMyStyle=True, donotDisplay=False, divName=None ):
+               useMyStyle=True, donotDisplay=False, divName=None, onClickCB = None ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
@@ -874,6 +875,12 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
             <div id='<TABLE_ID>_searchResults'></div>
             </div>'''.format(h + navigation_buttons)
             op = op.replace("<TABLE_ID>", tableID).replace('NUMROWS', str(len(nd))).replace('MAXDISP', str(maxrows) )
+            
+            if ( onClickCB ):
+                op = op.replace('onClickCB', onClickCB)
+            else:
+                op = op.replace('onClickCB', 'null')
+           
             h = op
         else:
             if(tableID):
