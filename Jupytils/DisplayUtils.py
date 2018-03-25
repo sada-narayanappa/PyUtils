@@ -446,6 +446,16 @@ def searchDF(df, s="", maxRows=10):
     df1 = df.ix[rows];
     return df1;
 
+def Filter(df, col, filt):
+    if (col < 0): return df
+    df=df[df[df.columns[col]].astype(str).str.contains(filt)]
+    return df;
+
+def FilterAll(df,filt):
+    for c in df.columns:
+        df=df[df[c].astype(str).str.contains(filt)]
+    return df;
+
 def colTypesDF(df):
     dfTypes=pd.DataFrame(df.dtypes)
     dfTypes=dfTypes.transpose()
@@ -787,6 +797,7 @@ onkeyup = "if (event.keyCode == 13) TableShowRows( $(this).val(), MAXDISP, '#<TA
 <input type=button value='>>' onclick="Page( 0, MAXDISP, '#<TABLE_ID>' );">
 
 <input type=button value='Save' onclick="SaveDataFrameFromHTML('#<TABLE_ID>', 'DFF_PY_VAR_<TABLE_ID>');">
+<input type=button value='&#x21bb;' onclick="ResetToOrig('#<TABLE_ID>');">
 <input type=button value='Search>' onclick="SearchDataFrame('DFF_PY_VAR_<TABLE_ID>', '#<TABLE_ID>', MAXDISP);">
 <input id='<TABLE_ID>_search' type=text value=''" size=10
     title="RE search support: ex: ^13$\\b to search for 13"
@@ -801,10 +812,10 @@ $("#<TABLE_ID> th").resizable()
 </script>
 ''';
 
-def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
-               tableID=None,  showNav= True, title=None,
+def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=False,
+               tableID=None,  showNav= True, title=None, setWidth=True,
                search=None, cols=[],  showStats = False, editable=True,
-               useMyStyle=True, donotDisplay=False, divName=None, onClickCB = None ):
+               useMyStyle=True, donotDisplay=False, divName=None, onClickCB = None, showSearchBoxes=False ):
                    
     if ( type(dfs) !=list and type(dfs) != tuple):
         dfs = [dfs];
@@ -846,9 +857,7 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
             h = h.replace("class='dataframe'", "class='ourTableStyle' ")
             h = h.replace('class="dataframe"', "class='ourTableStyle' ")
             h = h.replace('<table ', "<table cellpadding=0 cellspacing=0 ")
-            #h = h.replace("border=", "border=")
-        
-            
+            #h = h.replace("border=", "border=")            
         
         shIcons = showIcons; 
         if ( type(showIcons) ==list and type(showIcons) != tuple):
@@ -866,9 +875,22 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
         nd.tableID = tableID
         h = h.replace("<table ", "<table id='{}' ".format(tableID) )
         dfVarNme = 'DFF_PY_VAR_'+tableID;
+        nd.dfTableID = dfVarNme
+        
+        if (showSearchBoxes):
+            searchBox='''<br/><input type=text value='' size=5 style="width:100%;" onkeyup = 
+                        "if (event.keyCode == 13) SearchColTable('#<TABLE_ID>', $(this));"></div>
+                        '''.replace("<TABLE_ID>", tableID)
+            
+            ths=re.findall("<thead>.*</thead>", h , re.M|re.DOTALL)[0]
+            nth=ths.replace("</th>" , searchBox+"</th>")
+            h = re.sub("<thead>.*</thead>", nth, h, flags=re.M|re.DOTALL)
+
+        
         
         if(showNav):
             inspect.stack()[1][0].f_globals[dfVarNme] = nd
+            inspect.stack()[1][0].f_globals[dfVarNme+"Orig"] = nd
 
             op = '''<div id='tab_<TABLE_ID>' style='ddisplay:none;width:100%' >
             {}
@@ -892,9 +914,10 @@ def displayDFs(dfs, maxrows = 6, startrow=0, showTypes = False, showIcons=True,
         tit = title[i] if (type(title) == list) else title;
         tit = tit + " " + dim if (tit is not None) else dim
         otr += "<td style='text-align:left;' bgcolor=" + bg + ">" + tit + " var: " + dfVarNme + "<br>\n" + h + "</td>{}".format(tabSep)
+        
     otr += "</tr></table>"
     
-    if ( len(dfs) <=1):
+    if ( len(dfs) <=1 and not setWidth):
         otr = otr.replace('wwidth', 'width')
     
     if (divName is not None):

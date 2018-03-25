@@ -2,6 +2,8 @@
 <style>
 .sortdnafter:after { content: "\2193"}
 .sortupafter:after { content: "\2191";}
+.sortdnbefore:before { content: "\2193"}
+.sortupbefore:before { content: "\2191";}
 </style>
 
 <script>
@@ -272,7 +274,9 @@ function UpdateTableShowRows( tab_maxDisp, tableID, out) {
 function TableShowRows( gg, tab_maxDisp, tableID) {
     if (gg.length <=0 )
         return
-        
+     
+    nRows = $(tableID).find('tr:last').index()+1
+ 
     dfName = "DFF_PY_VAR_" + tableID.substr(1);
 
     g = Number.parseInt(gg)
@@ -280,8 +284,8 @@ function TableShowRows( gg, tab_maxDisp, tableID) {
         console.log("hmmmm value: "+ gg + " make no sense" )
         return '';
     }
-    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dfName, g, tab_maxDisp )
-    cb = UpdateTableShowRows.bind(null, tab_maxDisp, tableID)
+    command = "getHTMLTableRows({0}, startRow={1}, maxRows={2})".format(dfName, g, nRows )
+    cb = UpdateTableShowRows.bind(null, nRows, tableID)
     gu.callPython( command, cb) ;
 //    console.log("Executing Command: " + command );
 }
@@ -295,6 +299,43 @@ function TableRefresh(tableID) {
     cb = UpdateTableShowRows.bind(null, dispRows, tableID)
     gu.callPython( command, cb) ;
 //    console.log("Executing Command: " + command );
+}
+
+function ShowRows(div, html){
+    console.log("Here!! ", div, html);
+    $(div).val(html)
+}
+function SearchColTable(tableID, filter){
+    dfName = "DFF_PY_VAR_" + tableID.slice(1);
+    val = filter.val();
+    if (!val) {
+        ResetToOrig(tableID)
+    }
+    col = filter.closest('th').index()-1
+    nRows = $(tableID).find('tr:last').index()+1
+    cmd =  "{0} = Filter({1}, {2}, '{3}')".format(dfName, dfName, col, val)
+    console.log(">>>"+cmd+"<<<")
+    var kernel = Jupyter.notebook.kernel
+    kernel.execute(cmd)
+    //findAndExcecuteCell('#testdisp')
+    
+    cb  = ShowRows.bind(null, tableID+"_goto");
+    gu.callPython(dfName+".shape[0]", cb) ;
+    filter.closest('th').dblclick()
+}
+    
+function ResetToOrig(tableID){
+    orig = 'DFF_PY_VAR_'+tableID.slice(1)+"Orig";
+    ddDF = 'DFF_PY_VAR_'+tableID.slice(1);
+
+    cmd =  "{0} = {1}".format(ddDF, orig)
+    console.log(">>>"+cmd+"<<<")
+    var kernel = Jupyter.notebook.kernel
+    kernel.execute(cmd)
+    $(tableID + ' th:first').dblclick()
+    
+    cb  = ShowRows.bind(null, tableID+"_goto");
+    gu.callPython(dfName+".shape[0]", cb) ;
 }
     
 function Page(back, dispRows, tableID){
@@ -412,15 +453,17 @@ function TableSortRows( dispRows, tableID, out) {
         console.log(out)
         return
     }
-    //console.log("Setting value:[" + o1 +"]")
+    console.log("Setting value:[" + o1 +"]")
     $(tabID).attr('sort',o1)
     TableShowRows(0, dispRows, tabID)
     
     gg= $(tabID).find('tr:first th')
     gg.each(function(){
-        $(this).removeClass('sortdnafter')
-        $(this).removeClass('sortupafter')
+        $(this).removeClass('sortdnbefore')
+        $(this).removeClass('sortupbefore')
     })
+    if (!o1 || o1.trim().length <=0)
+        return
         
     sp = o1.split('|')
     s1 = sp[0].split(',')
@@ -428,7 +471,7 @@ function TableSortRows( dispRows, tableID, out) {
     
     for (i=0; i < s1.length; i++) {
         ctext = s1[i]
-        aclass = parseInt(s2[i]) ? "sortupafter" : "sortdnafter"
+        aclass = parseInt(s2[i]) ? "sortupbefore" : "sortdnbefore"
         gg.each(function(){
             if ($(this).text() === ctext)
                 $(this).addClass(aclass)
@@ -455,6 +498,11 @@ function SetSort(tableID) {
             sh =  (evt.shiftKey)        
             i = $(this).index();
             t = $(this).text()
+            //console.log( t)
+            if (typeof(t) == "undefined")
+                return;
+            
+            t = t.split('\n')[0]
             
             sort = $(tabID).attr('sort')
             if ( typeof(sort) == "undefined" || (!sh && !sort.startsWith(t+"|")) ) 
