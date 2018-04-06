@@ -454,10 +454,10 @@ function TableSortRows( dispRows, tableID, out) {
         return
     }
     console.log("Setting value:[" + o1 +"]")
-    $(tabID).attr('sort',o1)
-    TableShowRows(0, dispRows, tabID)
+    $(tableID).attr('sort',o1)
+    TableShowRows(0, dispRows, tableID)
     
-    gg= $(tabID).find('tr:first th')
+    gg= $(tableID).find('tr:first th')
     gg.each(function(){
         $(this).removeClass('sortdnbefore')
         $(this).removeClass('sortupbefore')
