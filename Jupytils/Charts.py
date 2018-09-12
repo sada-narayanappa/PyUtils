@@ -17,6 +17,7 @@ import numpy as np;
 HIGHCHARTS_SCRIPTS1 = "https://code.highcharts.com/highcharts.js"
 HIGHCHARTS_SCRIPTS2 = """
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/6.1.1/highcharts.js"></script>
 <script src="https://code.highcharts.com/highcharts-more.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
