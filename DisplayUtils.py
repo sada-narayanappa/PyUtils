@@ -713,7 +713,7 @@ function ShowSearchResults(resultsDIV, html){
     if ( html.startsWith("'") && html.endsWith("'") ){
         html = html.slice(1, -1);
     }
-    $(resultsDIV).html("Search Results:<br/>" + html)
+    $(resultsDIV).html("<br/>" + html)
 }
 function SearchDataFrame(dataFrameVariable, tableID, tab_maxDisp){
     v1 = tableID +'_search'
