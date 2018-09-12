@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version=0.392
+version=0.396
 
 setup(name='Jupytils',
       version=str(version),
@@ -38,5 +38,6 @@ setup(name='Jupytils',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
       ],
 )
