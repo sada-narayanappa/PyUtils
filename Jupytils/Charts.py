@@ -14,10 +14,12 @@ from IPython.core.display import display, HTML
 import numpy as np;
 
 # Note that Highstock includes all Highcharts features.
-HIGHCHARTS_SCRIPTS1 = "https://code.highcharts.com/highcharts.js"
-HIGHCHARTS_SCRIPTS2 = """
-<script src="https://code.highcharts.com/stock/highstock.js"></script>
+HIGHCHARTS_SCRIPTS1 = '''
+https://code.highcharts.com/highcharts.js
 <script src="https://code.highcharts.com/6.1.1/highcharts.js"></script>
+'''
+HIGHCHARTS_SCRIPTS2 = """
+<script src="https://code.highcharts.com/stock/6.1.1/highstock.js"></script>
 <script src="https://code.highcharts.com/highcharts-more.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
