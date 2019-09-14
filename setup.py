@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version=0.40700000000000003
+version=0.40800000000000003
 
 setup(name='Jupytils',
       version=str(version),
