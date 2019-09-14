@@ -13,7 +13,6 @@ from sklearn.svm import SVC
 
 from sklearn.decomposition import PCA
 import pandas as pd
-from pandas.tools.plotting import scatter_matrix
 import numpy.random as random
 from mpl_toolkits.mplot3d import Axes3D
 import glob
