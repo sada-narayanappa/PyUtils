@@ -4,7 +4,6 @@ from collections import Counter
 import numpy as np
 import pylab as pl
 import pandas as pd
-from pandas.tools.plotting import scatter_matrix
 import numpy.random as random
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.feature_extraction import DictVectorizer
