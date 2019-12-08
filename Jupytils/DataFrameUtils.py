@@ -34,12 +34,11 @@ If so, Pass "headers=None" and pass names
 # LIMITATIONS: Works only if all nodes have same tags
 # 1M rows must be good enough
 #
-def getDFFromXML(file, xmlTag=None, maxRows=1000000):
+def getDFFromXML(file, xmlTag=None, maxRows=10000000):
     with open(file, "r") as f:
         xmlText = f.read()
 
-    if(maxRows is None):
-        maxRows=1000000
+    maxRows = maxRows or 10000000
     
     root = ET.fromstring(xmlText)
     
@@ -57,7 +56,7 @@ def getDFFromXML(file, xmlTag=None, maxRows=1000000):
     rr=[]
     for i,e in enumerate(iters):
         r = []
-        for j,e1 in enumerate(e):
+        for e1 in e:
              r.append(e1.text)
         rr.append(r)    
         if (i>maxRows):
